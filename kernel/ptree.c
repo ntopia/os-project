@@ -17,7 +17,7 @@
  */
 SYSCALL_DEFINE2(ptree, struct prinfo *, buf, int *, nr)
 {
-	if(buf == NULL || nr == NULL || buf->pid == 0)
+	if (buf == NULL || nr == NULL)
 	{
 		return -EINVAL;
 	}

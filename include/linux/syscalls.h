@@ -850,5 +850,5 @@ asmlinkage long sys_finit_module(int fd, const char __user *uargs, int flags);
 /*
  * os project 1
  */
-asmlinkage long sys_ptree(struct prinfo * buf, int * nr);
+asmlinkage long sys_ptree(struct prinfo __user *buf, int __user *nr);
 #endif
