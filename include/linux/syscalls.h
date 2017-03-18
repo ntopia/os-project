@@ -78,6 +78,7 @@ struct sigaltstack;
 #include <linux/key.h>
 #include <trace/syscall.h>
 
+#include <linux/prinfo.h>
 /*
  * __MAP - apply a macro to syscall arguments
  * __MAP(n, m, t1, a1, t2, a2, ..., tn, an) will expand to
@@ -846,4 +847,8 @@ asmlinkage long sys_process_vm_writev(pid_t pid,
 asmlinkage long sys_kcmp(pid_t pid1, pid_t pid2, int type,
 			 unsigned long idx1, unsigned long idx2);
 asmlinkage long sys_finit_module(int fd, const char __user *uargs, int flags);
+/*
+ * os project 1
+ */
+asmlinkage long sys_ptree(struct prinfo * buf, int * nr);
 #endif
