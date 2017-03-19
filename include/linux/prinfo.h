@@ -1,9 +1,14 @@
+#ifndef _PRINFO_H
+#define _PRINFO_H
+
 struct prinfo
 {
 	long state;		/* current state of process */
-	pid_t parent_pid;	/* process id */
-	pid_t first_child_pid;	/* process id of parent */
-	pid_t next_sibling_pid;	/* pid of younger sibling */
+	pid_t pid;		/* process id */
+	pid_t parent_pid;	/* process id of parent*/
+	pid_t first_child_pid;	/* pid of younger sibling */
+	pid_t next_sibling_pid;
 	long uid;		/* user id of process owner */
 	char comm[64];		/* name of program executed */
-}
+};
+#endif
