@@ -15,7 +15,7 @@
 /*
  * entry point for ptree
  */
-SYSCALL_DEFINE2(ptree, struct prinfo *, buf, int *, nr)
+SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 {
 	if (buf == NULL || nr == NULL)
 	{
