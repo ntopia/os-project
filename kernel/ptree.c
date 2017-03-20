@@ -13,18 +13,23 @@
 
 #include <uapi/asm-generic/errno-base.h>
 
-long do_ptree(struct prinfo *kbuf, int nr_value){
+long do_ptree(struct prinfo *kbuf, int *nr_value){
 	/*
-	 * push prinfo struct to kbuf in Depth First Search order
-	 *
+	 * push prinfo struct to kbuf in Depth First Search order.
+	 * modify nr_value, 
+	 * if total number of entries is smaller than that.
+	 * 
 	 * return value: total number of entries on success, or the error code
 	 * 	-EFAULT: if buf are outside the accessible address space
 	 */
-	
+	long entry_num = 0;
 	read_lock(&tasklist_lock);
-	
+		
 	read_unlock(&tasklist_lock);
-	return 0;
+	
+
+	if (*nr_value > entry_num) *nr_value = entry_num;
+	return entry_num;
 }
 
 
@@ -49,15 +54,19 @@ SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 
 	if (buf == NULL || nr == NULL)
 		return -EINVAL;
-
 	if (get_user(nr_value, nr))
 		return -EFAULT;
-
 	if (nr_value <= 1)
 		return -EINVAL;
+	
+	kbuf = (struct prinfo*)kmalloc(nr_value * sizeof(struct prinfo), GFP_KERNEL);
+	if (kbuf == NULL)
+		return -ENOMEM;
+	result = do_ptree(kbuf, &nr_value);
 
-	kbuf = (struct prinfo*) kmalloc(nr_value*sizeof(struct prinfo), GFP_KERNEL);
-	result = do_ptree(kbuf, nr_value);
+	if (copy_to_user(buf, kbuf, nr_value*sizeof(struct prinfo)))
+		return -EFAULT;
+	if (put_user(nr_value, nr))
+		return -EFAULT;
 	return result;
 }
-
