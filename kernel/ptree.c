@@ -71,6 +71,7 @@ long do_ptree(struct prinfo *kbuf, int *nr_value)
 	 */
 	long entry_num = 0;
 	struct task_struct *curr_task;
+
 	printk(KERN_ALERT"**** do_ptree called\n");
 	read_lock(&tasklist_lock);
 	printk(KERN_ALERT"**** read locked\n");
@@ -97,7 +98,6 @@ long do_ptree(struct prinfo *kbuf, int *nr_value)
 	read_unlock(&tasklist_lock);
 	printk(KERN_ALERT"**** read unlocked\n");
 	
-
 	if (*nr_value > entry_num) *nr_value = entry_num;
 	return entry_num;
 }
@@ -121,6 +121,7 @@ SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 	int nr_value;
 	struct prinfo *kbuf;
 	long result = 0;
+
 	printk(KERN_ALERT"**** ptree called\n");
 	if (buf == NULL || nr == NULL)
 		return -EINVAL;
@@ -128,7 +129,7 @@ SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 		return -EFAULT;
 	if (nr_value <= 1)
 		return -EINVAL;
-	
+
 	kbuf = (struct prinfo*)kmalloc(nr_value * sizeof(struct prinfo), GFP_KERNEL);
 	printk(KERN_ALERT"**** kbuf allocated\n");
 	if (kbuf == NULL)
