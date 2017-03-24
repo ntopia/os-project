@@ -71,23 +71,24 @@ long do_ptree(struct prinfo *kbuf, int *nr_value)
 	long entry_num = 0;
 	struct task_struct *curr_task;
 
-	printk(KERN_ALERT"**** do_ptree called\n");
+	printk("**** do_ptree called\n");
+	printk("**** push %d prinfos to buf\n", *nr_value);
 	read_lock(&tasklist_lock);
-	printk(KERN_ALERT"**** read locked\n");
+	printk("**** read locked\n");
 	curr_task = &init_task;
 	while (curr_task)
 	{
-		printk(KERN_ALERT"**** [%ld] %s: %d\n", entry_num, curr_task->comm, curr_task->pid);
+		printk("**** entry_num[%ld] name: %s\tpid: %d\n", entry_num, curr_task->comm, curr_task->pid);
 		if (entry_num < *nr_value)
 		{
 			kbuf[entry_num].state = curr_task->state;
 			kbuf[entry_num].pid = curr_task->pid;
 			kbuf[entry_num].parent_pid = curr_task->real_parent->pid;
 			kbuf[entry_num].first_child_pid = get_pid_from_task(get_first_child(curr_task));
-			printk(KERN_ALERT"**** child's pid is [%d]\n", kbuf[entry_num].first_child_pid);
+			printk("**** \tchild's pid is [%d]\n", kbuf[entry_num].first_child_pid);
 			kbuf[entry_num].state = curr_task->state;
 			kbuf[entry_num].next_sibling_pid = get_pid_from_task(get_next_sibling(curr_task));
-			printk(KERN_ALERT"**** sibling's pid is [%d]\n", kbuf[entry_num].next_sibling_pid);
+			printk("**** \tsibling's pid is [%d]\n", kbuf[entry_num].next_sibling_pid);
 			kbuf[entry_num].uid = task_uid(curr_task);
 			strncpy(kbuf[entry_num].comm, curr_task->comm, 64);
 		}
@@ -95,7 +96,7 @@ long do_ptree(struct prinfo *kbuf, int *nr_value)
 		entry_num++;
 	}
 	read_unlock(&tasklist_lock);
-	printk(KERN_ALERT"**** read unlocked\n");
+	printk("**** read unlocked\n");
 	
 	if (*nr_value > entry_num) *nr_value = entry_num;
 	return entry_num;
@@ -121,7 +122,7 @@ SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 	struct prinfo *kbuf;
 	long result = 0;
 
-	printk(KERN_ALERT"**** ptree called\n");
+	printk("**** ptree called\n");
 	if (buf == NULL || nr == NULL)
 		return -EINVAL;
 	if (get_user(nr_value, nr))
@@ -130,11 +131,11 @@ SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 		return -EINVAL;
 
 	kbuf = (struct prinfo*)kmalloc(nr_value * sizeof(struct prinfo), GFP_KERNEL);
-	printk(KERN_ALERT"**** kbuf allocated\n");
+	printk("**** kbuf allocated\n");
 	if (kbuf == NULL)
 		return -ENOMEM;
 	result = do_ptree(kbuf, &nr_value);
-	printk(KERN_ALERT"**** do_ptree end\n");
+	printk("**** do_ptree end\n");
 
 	if (copy_to_user(buf, kbuf, nr_value*sizeof(struct prinfo)))
 		return -EFAULT;
