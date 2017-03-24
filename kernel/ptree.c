@@ -23,8 +23,7 @@ struct task_struct* get_first_child(struct task_struct *task)
 
 struct task_struct* get_next_sibling(struct task_struct *task)
 {
-	struct task_struct *first_sibling = list_entry(&task->parent->children, struct task_struct, sibling);
-	if (first_sibling == list_entry(task->sibling.next, struct task_struct, sibling))
+	if (list_is_last(&task->sibling, &task->parent->children))
 		return NULL;
 	return list_first_entry_or_null(&task->sibling, struct task_struct, sibling);
 }
