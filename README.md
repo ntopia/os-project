@@ -48,7 +48,7 @@ You can give a size of buffer to program like this.
 ```
 
 Also you can give nothing to program.
-In that case, the size of buffer is set to 80.
+In that case, the size of buffer is set to 256.
 
 ```
 ./test
@@ -122,6 +122,6 @@ They check if it has one or returns NULL.
 Implementing test program is quite simple.
 
 Input size of buffer from arguments.
-If there is no argument, set size of buffer to 80.
+If there is no argument, set size of buffer to 256.
 Then allocate buffer with `malloc()`, and just call ptree syscall.
 When the result returns, simply prints process tree with indent.

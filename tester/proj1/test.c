@@ -17,7 +17,7 @@ void print_prinfo(struct prinfo *pr, int indent)
 
 int main(int argc, char **argv)
 {
-	int nr = 80;
+	int nr = 256;
 	if (argc > 1)
 		nr = atoi(argv[1]);
 
