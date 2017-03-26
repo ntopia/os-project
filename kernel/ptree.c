@@ -35,12 +35,11 @@ struct task_struct* get_next_struct(struct task_struct *task)
 	 *   (if has) child -> sibling -> parent's sibling -> ...
 	 *   (if not) null
 	 */
-	
+
 	struct task_struct *next = get_first_child(task);
 	if (next)
 		return next;
-	while (task->pid)
-	{
+	while (task->pid) {
 		next = get_next_sibling(task);
 		if (next && next->pid)
 			return next;
@@ -76,11 +75,9 @@ long do_ptree(struct prinfo *kbuf, int *nr_value)
 	read_lock(&tasklist_lock);
 	printk("**** read locked\n");
 	curr_task = &init_task;
-	while (curr_task)
-	{
+	while (curr_task) {
 		printk("**** entry_num[%ld] name: %s\tpid: %d\n", entry_num, curr_task->comm, curr_task->pid);
-		if (entry_num < *nr_value)
-		{
+		if (entry_num < *nr_value) {
 			kbuf[entry_num].state = curr_task->state;
 			kbuf[entry_num].pid = curr_task->pid;
 			kbuf[entry_num].parent_pid = curr_task->real_parent->pid;
@@ -97,7 +94,7 @@ long do_ptree(struct prinfo *kbuf, int *nr_value)
 	}
 	read_unlock(&tasklist_lock);
 	printk("**** read unlocked\n");
-	
+
 	if (*nr_value > entry_num) *nr_value = entry_num;
 	return entry_num;
 }
@@ -137,7 +134,7 @@ SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 	result = do_ptree(kbuf, &nr_value);
 	printk("**** do_ptree end\n");
 
-	if (copy_to_user(buf, kbuf, nr_value*sizeof(struct prinfo)))
+	if (copy_to_user(buf, kbuf, nr_value * sizeof(struct prinfo)))
 		return -EFAULT;
 	if (put_user(nr_value, nr))
 		return -EFAULT;
