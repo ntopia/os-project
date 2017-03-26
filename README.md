@@ -44,7 +44,7 @@ push test /root/test
 You can give a size of buffer to program like this.
 
 ```
-./test [MAX NUM OF PROCESSES]
+./test [SIZE OF BUFFER]
 ```
 
 Also you can give nothing to program.
@@ -88,7 +88,6 @@ And it returns number of tasks.
 Finally, `sys_ptree` copies values from `do_ptree` to user space,
 check validity, and returns number of tasks.
 
-
 #### checking validity
 `sys_ptree` returns error codes below.
 * return `-EINVAL`: input value is invalid
@@ -105,8 +104,10 @@ check validity, and returns number of tasks.
 Depth-First-Search the tasks with non-recursive function `do_ptree`.
 Starting with `init_task`, it gets the next task with `get_next_struct`.
 
+Because of small kernel stack size, we implement DFS in non-recursive.
 `get_next_struct` gets the current `task_struct`
 and returns next struct ordered by DFS-preorder.
+
 If current task has child, the next task is its child.
 Unless it has child, it returns the next sibling.
 If it has no next sibling, it finds its parent's sibling, recursively.
