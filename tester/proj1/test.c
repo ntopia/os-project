@@ -3,7 +3,7 @@
 #include <sys/unistd.h>
 #include "test.h"
 
-void print_prinfo(struct prinfo* pr, int indent) {
+void print_prinfo(struct prinfo *pr, int indent) {
 	for (int i = 0; i < indent; ++i) {
 		printf("  ");
 	}
