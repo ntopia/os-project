@@ -15,6 +15,7 @@ This project was to add ptree system call in artik kernel
 * `arch/arm/kernel/calls.S` line 392 : entry in jump table
 * `arch/arm/include/asm/unistd.h` line 18 : number of syscalls
 * `kernel/ptree.c` : implementation of `sys_ptree`
+* `README.md` : report
 
 ### test program
 
@@ -58,18 +59,23 @@ In that case, the size of buffer is set to 80.
 
 ### adding prinfo structure
 
-added in `include/linux/prinfo.h`
+Added in `include/linux/prinfo.h`
 
 
 ### adding system call
 
 Defined actual function `sys_ptree` in `kernel/ptree.c`
-since this file did not exist in original kernel source, we had to modify kernel/Makefile to actually compile this file.
+since this file did not exist in original kernel source,
+we had to modify kernel/Makefile to actually compile this file.
 
-Then we added it in system call table at `arch/arm/kernel/calls.S` and changed `__NR_syscalls` from 380 to 384 at `arch/arm/include/asm/unistd.h`, because kernel checks this value with actual number of system calls and if they are not equal, it returns an error.
-number of system calls are aligned by 4, so value had to be 384, not 381.
+Then we added it in system call table at `arch/arm/kernel/calls.S`
+and changed `__NR_syscalls` from 380 to 384 at `arch/arm/include/asm/unistd.h`,
+because kernel checks this value with actual number of system calls and
+if they are not equal, it returns an error.
+Number of system calls are aligned by 4, so value had to be 384, not 381.
 
-Then we added this function at `include/linux/syscalls.h` to let assembly code run this function.
+Then we added this function at `include/linux/syscalls.h`
+to let assembly code run this function.
 
 
 ### implementing actual function
@@ -79,7 +85,8 @@ First, check if input values are valid in `sys_ptree`.
 Then Allocate buffer in kernel space and call `do_ptree` function.
 `do_ptree` performs DFS and adds task informations at buffer in pre-order.
 And it returns number of tasks.
-Finally, `sys_ptree` copies values from `do_ptree` to user space, check validity, and returns number of tasks.
+Finally, `sys_ptree` copies values from `do_ptree` to user space,
+check validity, and returns number of tasks.
 
 
 #### checking validity
@@ -87,7 +94,7 @@ Finally, `sys_ptree` copies values from `do_ptree` to user space, check validity
 * return `-EINVAL`: input value is invalid
     * `buf` is NULL
     * `nr` is NULL
-    * value of `nr` is equal or less then 1
+    * value of `nr` is less then 1
     * failed to get value of `nr`
 * return `-ENOMEM`: failed to allocate kernel buffer
 * return `-EFAULT`: failed to copy results to user memory
