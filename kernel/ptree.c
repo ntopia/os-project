@@ -65,7 +65,7 @@ long do_ptree(struct prinfo *kbuf, int *nr_value)
 	 * if total number of entries is smaller than that.
 	 *
 	 * return value: total number of entries on success, or the error code
-	 * 	-EFAULT: if buf are outside the accessible address space
+	 *     -EFAULT: if buf are outside the accessible address space
 	 */
 	long entry_num = 0;
 	struct task_struct *curr_task;
@@ -111,9 +111,9 @@ SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 	 * buf: buffer for the process data
 	 * nr: size of this buffer
 	 * return value: total number of entries on success, or the error code
-	 * 	-EINVAL: if buf or nr are null,
-	 * 	or if the number of entries is less than 1
-	 * 	-EFAULT: if buf or nr are outside the accessible address space
+	 *     -EINVAL: if buf or nr are null,
+	 *              or if the number of entries is less than 1
+	 *     -EFAULT: if buf or nr are outside the accessible address space
 	 */
 	int nr_value;
 	struct prinfo *kbuf;
