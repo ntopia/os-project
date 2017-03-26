@@ -6,6 +6,38 @@ team 10 (Han Suhwan, Park Seongwon, Roh Yoonmi)
 This project was to add ptree system call in artik kernel
 
 
+## What we modified
+
+### kernel
+
+* `include/linux/prinfo.h` : declaration of `struct prinfo`
+* `include/linux/syscalls.h` line 853 : declaration of `sys_ptree`
+* `arch/arm/kernel/calls.S` line 392 : entry in jump table
+* `arch/arm/include/asm/unistd.h` line 18 : number of syscalls
+* `kernel/ptree.c` : implementation of `sys_ptree`
+
+### test program
+
+* `tester/proj1/test.c` : implementation of test program
+* `tester/proj1/Makefile` : makefile of test program
+
+
+## How to Build
+
+### kernel
+
+```
+build
+```
+
+### test program
+
+```
+cd tester/proj1
+make
+```
+
+
 ## Implementation
 
 ### adding prinfo structure
@@ -25,6 +57,7 @@ Then we added this function at `include/linux/syscalls.h` to let assembly code r
 
 
 ### implementing actual function
+
 #### abstraction
 First, check if input values are valid in `sys_ptree`.
 Then Allocate buffer in kernel space and call `do_ptree` function.
