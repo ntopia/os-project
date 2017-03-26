@@ -54,6 +54,8 @@ In that case, the size of buffer is set to 256.
 ./test
 ```
 
+![screenshot of test program](http://i.imgur.com/EzPlQwa.png)
+
 
 ## Implementation
 
