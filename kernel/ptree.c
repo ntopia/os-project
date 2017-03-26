@@ -61,9 +61,9 @@ long do_ptree(struct prinfo *kbuf, int *nr_value)
 {
 	/*
 	 * push prinfo struct to kbuf in Depth First Search order.
-	 * modify nr_value, 
+	 * modify nr_value,
 	 * if total number of entries is smaller than that.
-	 * 
+	 *
 	 * return value: total number of entries on success, or the error code
 	 * 	-EFAULT: if buf are outside the accessible address space
 	 */
