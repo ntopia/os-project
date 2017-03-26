@@ -95,7 +95,8 @@ long do_ptree(struct prinfo *kbuf, int *nr_value)
 	read_unlock(&tasklist_lock);
 	printk("**** read unlocked\n");
 
-	if (*nr_value > entry_num) *nr_value = entry_num;
+	if (*nr_value > entry_num)
+		*nr_value = entry_num;
 	return entry_num;
 }
 
