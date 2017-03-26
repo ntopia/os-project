@@ -92,11 +92,11 @@ check validity, and returns number of tasks.
 `sys_ptree` returns error codes below.
 * return `-EINVAL`: input value is invalid
     * `buf` or `nr` are NULL
-    * `buf` or `nr` aren't accessible
-    * failed to get value of `buf` or `nr`
     * value of `nr` is less then 1
 * return `-ENOMEM`: failed to allocate kernel buffer
-* return `-EFAULT`: failed to copy results to user memory
+* return `-EFAULT`
+    * `buf` or `nr` aren't accessible
+    * failed to get value of `buf` or `nr`
     * failed to copy `prinfo` struct list to user memory `buf`
     * failed to copy number of processes to user memory `nr`
 
