@@ -125,7 +125,7 @@ SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 		return -EINVAL;
 	if (get_user(nr_value, nr))
 		return -EFAULT;
-	if (nr_value <= 1)
+	if (nr_value < 1)
 		return -EINVAL;
 
 	kbuf = kmalloc(nr_value * sizeof(struct prinfo), GFP_KERNEL);
