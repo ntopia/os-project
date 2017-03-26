@@ -109,6 +109,11 @@ For the code readibility and reusebility,
 getting first child and next sibling with `get_first_child` and `get_next_sibling`.
 They check if it has one or returns NULL.
 
+
 ### implementing test program
+Implementing test program is quite simple.
 
-
+Input size of buffer from arguments.
+If there is no argument, set size of buffer to 80.
+Then allocate buffer with `malloc()`, and just call ptree syscall.
+When the result returns, simply prints process tree with indent.
