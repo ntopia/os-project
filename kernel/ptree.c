@@ -128,14 +128,18 @@ SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 		return -EINVAL;
 
 	kbuf = (struct prinfo*)kmalloc(nr_value * sizeof(struct prinfo), GFP_KERNEL);
-	printk("**** kbuf allocated\n");
 	if (kbuf == NULL)
 		return -ENOMEM;
+	printk("**** kbuf allocated\n");
+
 	result = do_ptree(kbuf, &nr_value);
 	printk("**** do_ptree end\n");
 
-	if (copy_to_user(buf, kbuf, nr_value * sizeof(struct prinfo)))
+	if (copy_to_user(buf, kbuf, nr_value * sizeof(struct prinfo))) {
+		kfree(kbuf);
 		return -EFAULT;
+	}
+	kfree(kbuf);
 	if (put_user(nr_value, nr))
 		return -EFAULT;
 	return result;
