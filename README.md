@@ -22,19 +22,35 @@ This project was to add ptree system call in artik kernel
 * `tester/proj1/Makefile` : makefile of test program
 
 
-## How to Build
+## How to run
 
-### kernel
+### build kernel
 
 ```
 build
 ```
 
-### test program
+### build test program
 
 ```
 cd tester/proj1
 make
+push test /root/test
+```
+
+### run test program (inside artik console)
+
+You can give a size of buffer to program like this.
+
+```
+./test [MAX NUM OF PROCESSES]
+```
+
+Also you can give nothing to program.
+In that case, the size of buffer is set to 80.
+
+```
+./test
 ```
 
 
@@ -94,4 +110,5 @@ getting first child and next sibling with `get_first_child` and `get_next_siblin
 They check if it has one or returns NULL.
 
 ### implementing test program
-TODO
+
+
