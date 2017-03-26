@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 		pid_stack[top++] = prs[i].pid;
 		++indent;
 
-		print_prinfo(prs + i, indent);
+		print_prinfo(prs + i, indent - 1);
 	}
 
 	free(pid_stack);
