@@ -16,19 +16,19 @@
 
 #include <uapi/asm-generic/errno-base.h>
 
-struct task_struct* get_first_child(struct task_struct *task)
+struct task_struct *get_first_child(struct task_struct *task)
 {
 	return list_first_entry_or_null(&task->children, struct task_struct, sibling);
 }
 
-struct task_struct* get_next_sibling(struct task_struct *task)
+struct task_struct *get_next_sibling(struct task_struct *task)
 {
 	if (list_is_last(&task->sibling, &task->parent->children))
 		return NULL;
 	return list_first_entry_or_null(&task->sibling, struct task_struct, sibling);
 }
 
-struct task_struct* get_next_struct(struct task_struct *task)
+struct task_struct *get_next_struct(struct task_struct *task)
 {
 	/*
 	 * return value:
@@ -127,7 +127,7 @@ SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 	if (nr_value <= 1)
 		return -EINVAL;
 
-	kbuf = (struct prinfo*)kmalloc(nr_value * sizeof(struct prinfo), GFP_KERNEL);
+	kbuf = (struct prinfo *)kmalloc(nr_value * sizeof(struct prinfo), GFP_KERNEL);
 	if (kbuf == NULL)
 		return -ENOMEM;
 	printk("**** kbuf allocated\n");
