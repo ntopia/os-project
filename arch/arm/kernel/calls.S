@@ -390,6 +390,11 @@
 		CALL(sys_kcmp)
 		CALL(sys_finit_module)
 /* 380 */	CALL(sys_set_rotation)		/* project 2 */
+		CALL(sys_rotlock_read)
+		CALL(sys_rotlock_write)
+		CALL(sys_rotunlock_read)
+		CALL(sys_ni_syscall)		/* don't use 384 */
+		CALL(sys_rotunlock_write)
 #ifndef syscalls_counted
 .equ syscalls_padding, ((NR_syscalls + 3) & ~3) - NR_syscalls
 #define syscalls_counted

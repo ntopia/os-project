@@ -850,5 +850,8 @@ asmlinkage long sys_finit_module(int fd, const char __user *uargs, int flags);
  * os proj 2
  */
 asmlinkage long sys_set_rotation(int degree);
-
+asmlinkage long sys_rotlock_read(int degree, int range);
+asmlinkage long sys_rotlock_write(int degree, int range);
+asmlinkage long sys_rotunlock_read(int degree, int range);
+asmlinkage long sys_rotunlock_write(int degree, int range);
 #endif

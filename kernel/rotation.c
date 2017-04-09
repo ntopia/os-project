@@ -22,3 +22,60 @@ SYSCALL_DEFINE1(set_rotation, int, degree)
 	 */
 	return 0;
 }
+
+SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
+{
+	if(degree < 0 || degree >= 360)
+		return -EINVAL;
+	/*
+	 * need a lock here
+	 */
+	printk("** lock read rotation : (%d, %d) **\n", degree, range);
+	/*
+	 * TODO: do sth here
+	 */
+	return 0;
+}
+
+SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
+{
+	if(degree < 0 || degree >= 360)
+		return -EINVAL;
+	/*
+	 * need a lock here
+	 */
+	printk("** lock write rotation : (%d, %d) **\n", degree, range);
+	/*
+	 * TODO: do sth here
+	 */
+	return 0;
+}
+
+SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
+{
+	if(degree < 0 || degree >= 360)
+		return -EINVAL;
+	/*
+	 * need a lock here
+	 */
+	printk("** unlock read rotation : (%d, %d) **\n", degree, range);
+	/*
+	 * TODO: do sth here
+	 */
+	return 0;
+}
+
+SYSCALL_DEFINE2(rotunlock_write, int, degree, int, range)
+{
+	if(degree < 0 || degree >= 360)
+		return -EINVAL;
+	/*
+	 * need a lock here
+	 */
+	printk("** unlock write rotation : (%d, %d) **\n", degree, range);
+	/*
+	 * TODO: do sth here
+	 */
+	return 0;
+}
+
