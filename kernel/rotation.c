@@ -10,7 +10,7 @@ int cur_rotation; /* current rotation of device */
  */
 SYSCALL_DEFINE1(set_rotation, int, degree)
 {
-	if(degree < 0 || degree >= 360)
+	if (degree < 0 || degree >= 360)
 		return -EINVAL;
 	/*
 	 * need a lock here
@@ -25,7 +25,7 @@ SYSCALL_DEFINE1(set_rotation, int, degree)
 
 SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 {
-	if(degree < 0 || degree >= 360)
+	if (degree < 0 || degree >= 360)
 		return -EINVAL;
 	/*
 	 * need a lock here
@@ -39,7 +39,7 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 
 SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 {
-	if(degree < 0 || degree >= 360)
+	if (degree < 0 || degree >= 360)
 		return -EINVAL;
 	/*
 	 * need a lock here
@@ -53,7 +53,7 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 
 SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 {
-	if(degree < 0 || degree >= 360)
+	if (degree < 0 || degree >= 360)
 		return -EINVAL;
 	/*
 	 * need a lock here
@@ -67,7 +67,7 @@ SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 
 SYSCALL_DEFINE2(rotunlock_write, int, degree, int, range)
 {
-	if(degree < 0 || degree >= 360)
+	if (degree < 0 || degree >= 360)
 		return -EINVAL;
 	/*
 	 * need a lock here
