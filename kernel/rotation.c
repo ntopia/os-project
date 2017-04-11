@@ -198,8 +198,13 @@ SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 	printk("** unlock read rotation : (%d, %d) **\n", degree, range);
 
 	lock = find_lock(pid);
-	if (lock)
+	if (lock) {
 		list_del(&lock->list);
+		kfree(lock);
+	}
+	else {
+		printk("couldnt find lock! something wrong!\n");
+	}
 	spin_unlock(&ctx_lock);
 
 	return 0;
@@ -222,8 +227,13 @@ SYSCALL_DEFINE2(rotunlock_write, int, degree, int, range)
 	printk("** unlock write rotation : (%d, %d) **\n", degree, range);
 
 	lock = find_lock(pid);
-	if (lock)
+	if (lock) {
 		list_del(&lock->list);
+		kfree(lock);
+	}
+	else {
+		printk("couldnt find lock! something wrong!\n");
+	}
 	spin_unlock(&ctx_lock);
 
 	return 0;
