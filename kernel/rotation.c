@@ -11,10 +11,17 @@ enum rotlock_mode {
 struct rotlock_t {
 	int degree, range;
 	enum rotlock_mode mode;
+	pid_t pid;
+};
+
+struct rotlock_context {
+	struct list_head acquired;
+	struct list_head pending;
 };
 
 
 int cur_rotation; /* current rotation of device */
+struct rotlock_context cur_context; /* current context of rotation lock */
 
 /*
  * set rotation function
