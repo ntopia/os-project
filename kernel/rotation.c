@@ -48,7 +48,7 @@ bool check_overlap(int degree1, int range1, int degree2, int range2)
  */
 bool check_contains(int degree, int range, int rot)
 {
-	return rot_distance(degree, rot) <= range;
+	return rot_distance(degree, rot) < range;
 }
 
 /*
