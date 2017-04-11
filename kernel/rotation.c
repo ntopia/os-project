@@ -123,8 +123,8 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 	new_lock->mode = ROTLOCK_READ;
 	new_lock->pid = task_pid_nr(current);
 
-	if (check_contains(degree, range, cur_rotation)
-		&& find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+	if (!check_contains(degree, range, cur_rotation)
+		|| find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
 
 		printk("there is an acquired lock overlapped with me.\n");
 		printk("or cur_rotation is not mine.\n");
@@ -163,8 +163,8 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 	new_lock->mode = ROTLOCK_WRITE;
 	new_lock->pid = task_pid_nr(current);
 
-	if (check_contains(degree, range, cur_rotation)
-		&& find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+	if (!check_contains(degree, range, cur_rotation)
+		|| find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
 
 		printk("there is an acquired lock overlapped with me.\n");
 		printk("or cur_rotation is not mine.\n");
