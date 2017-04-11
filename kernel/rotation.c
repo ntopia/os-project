@@ -31,7 +31,7 @@ int cur_rotation; /* current rotation of device */
 int rot_distance(int rot1, int rot2)
 {
 	int dist1 = (rot1 - rot2 > 0) ? rot1 - rot2 : 360 + rot1 - rot2;
-	int dist2 = 360 - 2 - dist1;
+	int dist2 = 360 - dist1;
 	return (dist1 < dist2) ? dist1 : dist2;
 }
 
@@ -40,7 +40,7 @@ int rot_distance(int rot1, int rot2)
  */
 bool check_overlap(int degree1, int range1, int degree2, int range2)
 {
-	return rot_distance(degree1, degree2) < range1 + range2;
+	return rot_distance(degree1, degree2) <= range1 + range2;
 }
 
 /*
@@ -48,7 +48,7 @@ bool check_overlap(int degree1, int range1, int degree2, int range2)
  */
 bool check_contains(int degree, int range, int rot)
 {
-	return rot_distance(degree, rot) < range;
+	return rot_distance(degree, rot) <= range;
 }
 
 /*
