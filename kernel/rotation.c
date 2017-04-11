@@ -3,6 +3,17 @@
 
 #include <uapi/asm-generic/errno-base.h>
 
+enum rotlock_mode {
+	ROTLOCK_READ = 0,
+	ROTLOCK_WRITE = 1
+};
+
+struct rotlock_t {
+	int degree, range;
+	enum rotlock_mode mode;
+};
+
+
 int cur_rotation; /* current rotation of device */
 
 /*
