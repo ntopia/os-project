@@ -1,4 +1,5 @@
 #include <linux/kernel.h>
+#include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/syscalls.h>
 
@@ -33,15 +34,29 @@ bool check_intersect(int degree1, int range1, int degree2, int range2)
 }
 
 
-bool find_acquired_lock(int degree, int range, int mode_flag)
+struct rotlock_t *find_acquired_lock(int degree, int range, int mode_flag)
 {
 	struct rotlock_t *rotlock;
 
 	list_for_each_entry(rotlock, &acquired, list) {
 		if (check_intersect(degree, range, rotlock->degree, rotlock->range) && (rotlock->mode & mode_flag))
-			return true;
+			return rotlock;
 	}
-	return false;
+	return NULL;
+}
+
+struct rotlock_t *find_lock(pid_t pid) {
+	struct rotlock_t *rotlock;
+
+	list_for_each_entry(rotlock, &acquired, list) {
+		if (rotlock->pid == pid)
+			return rotlock;
+	}
+	list_for_each_entry(rotlock, &pending, list) {
+		if (rotlock->pid == pid)
+			return rotlock;
+	}
+	return NULL;
 }
 
 
@@ -121,11 +136,19 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 
 SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 {
+	pid_t pid;
+	struct rotlock_t *lock;
+
 	if (degree < 0 || degree >= 360)
 		return -EINVAL;
 
+	pid = task_pid_nr(current);
 	spin_lock(&ctx_lock);
 	printk("** unlock read rotation : (%d, %d) **\n", degree, range);
+
+	lock = find_lock(pid);
+	if (lock)
+		list_del(&lock->list);
 	spin_unlock(&ctx_lock);
 
 	return 0;
@@ -133,11 +156,19 @@ SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 
 SYSCALL_DEFINE2(rotunlock_write, int, degree, int, range)
 {
+	pid_t pid;
+	struct rotlock_t *lock;
+
 	if (degree < 0 || degree >= 360)
 		return -EINVAL;
 
+	pid = task_pid_nr(current);
 	spin_lock(&ctx_lock);
 	printk("** unlock write rotation : (%d, %d) **\n", degree, range);
+
+	lock = find_lock(pid);
+	if (lock)
+		list_del(&lock->list);
 	spin_unlock(&ctx_lock);
 
 	return 0;
