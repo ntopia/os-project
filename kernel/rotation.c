@@ -26,14 +26,29 @@ int cur_rotation; /* current rotation of device */
 
 
 /*
- * returns true if two ranges are overlapped
+ * return distance of two rotation
+ */
+int rot_distance(int rot1, int rot2)
+{
+	int dist1 = (rot1 - rot2 > 0) ? rot1 - rot2 : 360 + rot1 - rot2;
+	int dist2 = 360 - 2 - dist1;
+	return (dist1 < dist2) ? dist1 : dist2;
+}
+
+/*
+ * return true if two ranges are overlapped
  */
 bool check_overlap(int degree1, int range1, int degree2, int range2)
 {
-	int dist1 = (degree1 - degree2 > 0) ? degree1 - degree2 : 360 + degree1 - degree2;
-	int dist2 = 360 - 2 - dist1;
-	int dist = (dist1 < dist2) ? dist1 : dist2;
-	return dist < range1 + range2;
+	return rot_distance(degree1, degree2) < range1 + range2;
+}
+
+/*
+ * return true if given range contains rot
+ */
+bool check_contains(int degree, int range, int rot)
+{
+	return rot_distance(degree, rot) <= range;
 }
 
 /*
@@ -45,7 +60,8 @@ struct rotlock_t *find_overlapped_acquired_lock(int degree, int range, int mode_
 	struct rotlock_t *rotlock;
 
 	list_for_each_entry(rotlock, &acquired, list) {
-		if (check_overlap(degree, range, rotlock->degree, rotlock->range) && (rotlock->mode & mode_flag))
+		if ((rotlock->mode & mode_flag)
+			&& check_overlap(degree, range, rotlock->degree, rotlock->range))
 			return rotlock;
 	}
 	return NULL;
@@ -106,8 +122,13 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 	new_lock->range = range;
 	new_lock->mode = ROTLOCK_READ;
 
-	if (find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
-		printk("there is an acquired lock overlapped with me. we should wait.\n");
+	if (check_contains(degree, range, cur_rotation)
+		&& find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+
+		printk("there is an acquired lock overlapped with me.\n");
+		printk("or cur_rotation is not mine.\n");
+		printk("we should wait.\n");
+
 		list_add_tail(&new_lock->list, &pending);
 		spin_unlock(&ctx_lock);
 		/* TODO: wait */
@@ -140,8 +161,13 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 	new_lock->range = range;
 	new_lock->mode = ROTLOCK_WRITE;
 
-	if (find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
-		printk("there is an acquired lock overlapped with me. we should wait.\n");
+	if (check_contains(degree, range, cur_rotation)
+		&& find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+
+		printk("there is an acquired lock overlapped with me.\n");
+		printk("or cur_rotation is not mine.\n");
+		printk("we should wait.\n");
+
 		list_add_tail(&new_lock->list, &pending);
 		spin_unlock(&ctx_lock);
 		/* TODO: wait */
