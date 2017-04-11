@@ -25,7 +25,10 @@ spinlock_t ctx_lock = __SPIN_LOCK_UNLOCKED();
 int cur_rotation; /* current rotation of device */
 
 
-bool check_intersect(int degree1, int range1, int degree2, int range2)
+/*
+ * returns true if two ranges are overlapped
+ */
+bool check_overlap(int degree1, int range1, int degree2, int range2)
 {
 	int dist1 = (degree1 - degree2 > 0) ? degree1 - degree2 : 360 + degree1 - degree2;
 	int dist2 = 360 - 2 - dist1;
@@ -33,19 +36,26 @@ bool check_intersect(int degree1, int range1, int degree2, int range2)
 	return dist < range1 + range2;
 }
 
-
-struct rotlock_t *find_acquired_lock(int degree, int range, int mode_flag)
+/*
+ * find overlapped & acquired lock with [degree-range, degree+range]
+ * it filters result by mode_flag
+ */
+struct rotlock_t *find_overlapped_acquired_lock(int degree, int range, int mode_flag)
 {
 	struct rotlock_t *rotlock;
 
 	list_for_each_entry(rotlock, &acquired, list) {
-		if (check_intersect(degree, range, rotlock->degree, rotlock->range) && (rotlock->mode & mode_flag))
+		if (check_overlap(degree, range, rotlock->degree, rotlock->range) && (rotlock->mode & mode_flag))
 			return rotlock;
 	}
 	return NULL;
 }
 
-struct rotlock_t *find_lock(pid_t pid) {
+/*
+ * find lock by pid
+ */
+struct rotlock_t *find_lock(pid_t pid)
+{
 	struct rotlock_t *rotlock;
 
 	list_for_each_entry(rotlock, &acquired, list) {
@@ -60,8 +70,9 @@ struct rotlock_t *find_lock(pid_t pid) {
 }
 
 
+
 /*
- * set rotation function
+ * set_rotation syscall
  */
 SYSCALL_DEFINE1(set_rotation, int, degree)
 {
@@ -76,6 +87,10 @@ SYSCALL_DEFINE1(set_rotation, int, degree)
 	return 0;
 }
 
+
+/*
+ * rotlock_read syscall
+ */
 SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 {
 	struct rotlock_t *new_lock;
@@ -91,12 +106,13 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 	new_lock->range = range;
 	new_lock->mode = ROTLOCK_READ;
 
-	if (find_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+	if (find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+		printk("there is an acquired lock overlapped with me. we should wait.\n");
 		list_add_tail(&new_lock->list, &pending);
 		spin_unlock(&ctx_lock);
-		////	TODO: wait
-	}
-	else {
+		/* TODO: wait */
+	} else {
+		printk("ok. immediately get a lock!\n");
 		list_add_tail(&new_lock->list, &acquired);
 	}
 
@@ -105,6 +121,10 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 	return 0;
 }
 
+
+/*
+ * rotlock_write syscall
+ */
 SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 {
 	struct rotlock_t *new_lock;
@@ -120,12 +140,13 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 	new_lock->range = range;
 	new_lock->mode = ROTLOCK_WRITE;
 
-	if (find_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+	if (find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+		printk("there is an acquired lock overlapped with me. we should wait.\n");
 		list_add_tail(&new_lock->list, &pending);
 		spin_unlock(&ctx_lock);
-		////	TODO: wait
-	}
-	else {
+		/* TODO: wait */
+	} else {
+		printk("ok. immediately get a lock!\n");
 		list_add_tail(&new_lock->list, &acquired);
 	}
 
@@ -134,6 +155,10 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 	return 0;
 }
 
+
+/*
+ * rotunlock_read syscall
+ */
 SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 {
 	pid_t pid;
@@ -154,6 +179,10 @@ SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 	return 0;
 }
 
+
+/*
+ * rotunlock_write syscall
+ */
 SYSCALL_DEFINE2(rotunlock_write, int, degree, int, range)
 {
 	pid_t pid;
