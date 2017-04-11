@@ -27,7 +27,7 @@ SYSCALL_DEFINE1(set_rotation, int, degree)
 	 * need a lock here
 	 */
 	cur_rotation = degree;
-	printk("set rotation to %d\n",cur_rotation);
+	printk("set rotation to %d\n", cur_rotation);
 	/*
 	 * TODO: do sth here
 	 */
