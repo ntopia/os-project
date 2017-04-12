@@ -1,4 +1,5 @@
 #include <linux/kernel.h>
+#include <linux/mutex.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/syscalls.h>
@@ -15,6 +16,7 @@ struct rotlock_t {
 	enum rotlock_mode mode;
 	pid_t pid;
 	struct list_head list;
+	struct mutex lock;
 };
 
 /* context of rotation lock */
@@ -132,7 +134,13 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 
 		list_add_tail(&new_lock->list, &pending);
 		spin_unlock(&ctx_lock);
-		/* TODO: wait */
+		/*
+		 * wait until acquired
+		 */
+		mutex_init(&new_lock->lock);
+		mutex_lock(&new_lock->lock);
+		mutex_lock(&new_lock->lock);
+		mutex_unlock(&new_lock->lock);
 	} else {
 		printk("ok. immediately get a lock!\n");
 		list_add_tail(&new_lock->list, &acquired);
@@ -172,7 +180,13 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 
 		list_add_tail(&new_lock->list, &pending);
 		spin_unlock(&ctx_lock);
-		/* TODO: wait */
+		/*
+		 * wait until acquired
+		 */
+		mutex_init(&new_lock->lock);
+		mutex_lock(&new_lock->lock);
+		mutex_lock(&new_lock->lock);
+		mutex_unlock(&new_lock->lock);
 	} else {
 		printk("ok. immediately get a lock!\n");
 		list_add_tail(&new_lock->list, &acquired);
