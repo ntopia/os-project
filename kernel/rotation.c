@@ -87,12 +87,35 @@ struct rotlock_t *find_lock(pid_t pid)
 	return NULL;
 }
 
+/*
+ * traverse pending list and acquire valid locks
+ * TODO: fix it to follow our policy
+ */
+void resolve_pending(void)
+{
+	struct rotlock_t *rotlock;
 
+	spin_lock(&ctx_lock);
+	list_for_each_entry(rotlock, &pending, list)
+	{
+		int degree = rotlock->degree;
+		int range = rotlock->range;
+		if(check_contains(degree,range, cur_rotation)
+				&& !find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE))
+		{
+			mutex_unlock(&rotlock->lock);
+			list_del(&rotlock->list);
+			list_add_tail(&rotlock->list, &acquired);
+		}
+	}
+	spin_unlock(&ctx_lock);
+}
 
 /*
  * set_rotation syscall
  */
 SYSCALL_DEFINE1(set_rotation, int, degree)
+
 {
 	if (degree < 0 || degree >= 360)
 		return -EINVAL;
@@ -126,7 +149,7 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 	new_lock->pid = task_pid_nr(current);
 
 	if (!check_contains(degree, range, cur_rotation)
-		|| find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+			|| find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
 
 		printk("there is an acquired lock overlapped with me.\n");
 		printk("or cur_rotation is not mine.\n");
@@ -172,7 +195,7 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 	new_lock->pid = task_pid_nr(current);
 
 	if (!check_contains(degree, range, cur_rotation)
-		|| find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+			|| find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
 
 		printk("there is an acquired lock overlapped with me.\n");
 		printk("or cur_rotation is not mine.\n");
@@ -222,6 +245,7 @@ SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 		printk("couldnt find lock! something wrong!\n");
 	}
 	spin_unlock(&ctx_lock);
+	resolve_pending();
 
 	return 0;
 }
@@ -251,6 +275,7 @@ SYSCALL_DEFINE2(rotunlock_write, int, degree, int, range)
 		printk("couldnt find lock! something wrong!\n");
 	}
 	spin_unlock(&ctx_lock);
+	resolve_pending();
 
 	return 0;
 }
