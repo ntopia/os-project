@@ -164,6 +164,7 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 		mutex_lock(&new_lock->lock);
 		mutex_lock(&new_lock->lock);
 		mutex_unlock(&new_lock->lock);
+		spin_lock(&ctx_lock);
 	} else {
 		printk("ok. immediately get a lock!\n");
 		list_add_tail(&new_lock->list, &acquired);
@@ -210,6 +211,7 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 		mutex_lock(&new_lock->lock);
 		mutex_lock(&new_lock->lock);
 		mutex_unlock(&new_lock->lock);
+		spin_lock(&ctx_lock);
 	} else {
 		printk("ok. immediately get a lock!\n");
 		list_add_tail(&new_lock->list, &acquired);
