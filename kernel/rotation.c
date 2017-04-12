@@ -22,7 +22,7 @@ struct rotlock_t {
 /* context of rotation lock */
 static LIST_HEAD(acquired);
 static LIST_HEAD(pending);
-spinlock_t ctx_lock = __SPIN_LOCK_UNLOCKED();
+DEFINE_SPINLOCK(ctx_lock);
 
 int cur_rotation; /* current rotation of device */
 
