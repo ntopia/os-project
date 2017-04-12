@@ -93,10 +93,10 @@ struct rotlock_t *find_lock(pid_t pid)
  */
 void resolve_pending(void)
 {
-	struct rotlock_t *rotlock;
+	struct rotlock_t *rotlock, *next_rotlock;
 
 	spin_lock(&ctx_lock);
-	list_for_each_entry(rotlock, &pending, list)
+	list_for_each_entry_safe(rotlock, next_rotlock, &pending, list)
 	{
 		int degree = rotlock->degree;
 		int range = rotlock->range;
