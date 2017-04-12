@@ -137,14 +137,14 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 	if (degree < 0 || degree >= 360)
 		return -EINVAL;
 
-	spin_lock(&ctx_lock);
-	printk("** lock read rotation : (%d, %d) **\n", degree, range);
-
 	new_lock = kmalloc(sizeof(struct rotlock_t), GFP_KERNEL);
 	new_lock->degree = degree;
 	new_lock->range = range;
 	new_lock->mode = ROTLOCK_READ;
 	new_lock->pid = task_pid_nr(current);
+
+	spin_lock(&ctx_lock);
+	printk("** lock read rotation : (%d, %d) **\n", degree, range);
 
 	if (!check_contains(degree, range, cur_rotation)
 			|| find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
@@ -184,14 +184,14 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 	if (degree < 0 || degree >= 360)
 		return -EINVAL;
 
-	spin_lock(&ctx_lock);
-	printk("** lock write rotation : (%d, %d) **\n", degree, range);
-
 	new_lock = kmalloc(sizeof(struct rotlock_t), GFP_KERNEL);
 	new_lock->degree = degree;
 	new_lock->range = range;
 	new_lock->mode = ROTLOCK_WRITE;
 	new_lock->pid = task_pid_nr(current);
+
+	spin_lock(&ctx_lock);
+	printk("** lock write rotation : (%d, %d) **\n", degree, range);
 
 	if (!check_contains(degree, range, cur_rotation)
 			|| find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
@@ -237,16 +237,15 @@ SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 	printk("** unlock read rotation : (%d, %d) **\n", degree, range);
 
 	lock = find_lock(pid);
-	if (lock) {
+	if (lock)
 		list_del(&lock->list);
-		kfree(lock);
-	}
-	else {
+	else
 		printk("couldnt find lock! something wrong!\n");
-	}
+
 	spin_unlock(&ctx_lock);
 	resolve_pending();
 
+	kfree(lock);
 	return 0;
 }
 
@@ -267,16 +266,15 @@ SYSCALL_DEFINE2(rotunlock_write, int, degree, int, range)
 	printk("** unlock write rotation : (%d, %d) **\n", degree, range);
 
 	lock = find_lock(pid);
-	if (lock) {
+	if (lock)
 		list_del(&lock->list);
-		kfree(lock);
-	}
-	else {
+	else
 		printk("couldnt find lock! something wrong!\n");
-	}
+
 	spin_unlock(&ctx_lock);
 	resolve_pending();
 
+	kfree(lock);
 	return 0;
 }
 
