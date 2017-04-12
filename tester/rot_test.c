@@ -16,11 +16,11 @@ const char* helps = "* help\t:\n"
 "    WL d r : rotlock_write( d, r );\n"
 "    WU d r : rotunlock_write( d, r );\n";
 
-void prt_info(char* cmd, int deg, int ran){
+void prt_info(char* cmd, int deg, int ran) {
     printf("* exec\t: [%s]\tDegree %d\tRange %d\n", cmd, deg, ran);
 }
 
-void prt_returns(long ret){
+void prt_returns(long ret) {
     if (ret < 0)
         printf("\treturn with error value\t: %d, %s\n", errno, strerror(errno));
     else 
@@ -28,12 +28,12 @@ void prt_returns(long ret){
 }
 
 
-int main(){
-    while(1){
+int main() {
+    while (1) {
         printf("* input\t: ");
         scanf("%s", cmd);
 
-        for (int i = 0; cmd[i] != '\0'; i++){
+        for (int i = 0; cmd[i] != '\0'; i++) {
             if (cmd[i] >= 'a') cmd[i] -= 32;
         }
      
@@ -46,24 +46,24 @@ int main(){
         }
         
         long ret = 0;
-        if(cmd[0] == 'S'){
+        if (cmd[0] == 'S') {
             scanf("%d", &i);
             printf("* exec\t: [Set Rotation]\tDegree  %d\n", i);
 
             ret = syscall(__NR_set_rotation, i);
 
-        } else{
+        } else {
             scanf("%d %d", &i, &j);
-            if(strncmp(cmd, "RL", 2) == 0){
+            if (strncmp(cmd, "RL", 2) == 0) {
                 prt_info("Read Lock", i, j);
                 ret = syscall(__NR_rotlock_read, i, j);
-            } else if (strncmp(cmd, "RU", 2) == 0){
+            } else if (strncmp(cmd, "RU", 2) == 0) {
                 prt_info("Read Unlock", i, j);
                 ret = syscall(__NR_rotunlock_read, i, j);
-            } else if (strncmp(cmd, "WL", 2) == 0){
+            } else if (strncmp(cmd, "WL", 2) == 0) {
                 prt_info("Write Lock", i, j);
                 ret = syscall(__NR_rotlock_write, i, j);
-            } else if (strncmp(cmd, "WU", 2) == 0){
+            } else if (strncmp(cmd, "WU", 2) == 0) {
                 prt_info("Write Unlock", i, j);
                 ret = syscall(__NR_rotunlock_write, i, j);
             } else {
@@ -71,9 +71,7 @@ int main(){
                 continue;
             }
         }
-
         prt_returns(ret);
-
     }
     return 0;
 }
