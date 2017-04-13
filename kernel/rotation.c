@@ -122,6 +122,8 @@ SYSCALL_DEFINE1(set_rotation, int, degree)
 	cur_rotation = degree;
 	printk("set rotation to %d\n", cur_rotation);
 	spin_unlock(&ctx_lock);
+	
+	resolve_pending();
 
 	return 0;
 }
