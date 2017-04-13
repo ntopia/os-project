@@ -147,7 +147,7 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 	printk("** lock read rotation : (%d, %d) **\n", degree, range);
 
 	if (!check_contains(degree, range, cur_rotation)
-			|| find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+			|| find_overlapped_acquired_lock(degree, range, ROTLOCK_WRITE)) {
 
 		printk("there is an acquired lock overlapped with me.\n");
 		printk("or cur_rotation is not mine.\n");
