@@ -87,6 +87,37 @@ struct rotlock_t *find_lock(pid_t pid)
 	return NULL;
 }
 
+/* 
+ * check if a lock can acquire the lock
+ */
+bool check_acquirable(struct rotlock_t *lock)
+{
+	int degree = lock->degree, range = lock->range;
+	struct rotlock_t *pending_lock, *acquired_lock;
+	
+	if (!check_contains(degree, range, cur_rotation)) 
+		return false;
+
+	if (lock->mode == ROTLOCK_WRITE) {
+		return !find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE);
+	} else {
+		if (find_overlapped_acquired_lock(degree, range, ROTLOCK_WRITE))
+			return false;
+		list_for_each_entry(acquired_lock, &acquired, list) {
+			if (acquired_lock->mode != ROTLOCK_READ) 
+				continue;
+			list_for_each_entry(pending_lock, &pending, list) {
+				if (pending_lock->mode == ROTLOCK_WRITE
+						&& check_contains(pending_lock->degree, pending_lock->range, cur_rotation)
+						&& check_overlap(pending_lock->degree, pending_lock->range,
+							acquired_lock->degree, acquired_lock->range))
+					return false;
+			}
+		}
+		return true;
+	}
+}
+
 /*
  * traverse pending list and acquire valid locks
  * TODO: fix it to follow our policy
