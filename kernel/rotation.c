@@ -120,10 +120,11 @@ bool check_acquirable(struct rotlock_t *lock)
 
 /*
  * traverse pending list and acquire valid locks
- * TODO: fix it to follow our policy
+ * returns total number of processes awoken
  */
-void resolve_pending(void)
+int resolve_pending(void)
 {
+	int awoken_count = 0;
 	struct rotlock_t *rotlock, *next_rotlock;
 
 	spin_lock(&ctx_lock);
@@ -132,16 +133,18 @@ void resolve_pending(void)
 			mutex_unlock(&rotlock->lock);
 			list_del(&rotlock->list);
 			list_add_tail(&rotlock->list, &acquired);
+			awoken_count++;
 		}
 	}
 	spin_unlock(&ctx_lock);
+
+	return awoken_count;
 }
 
 /*
  * set_rotation syscall
  */
 SYSCALL_DEFINE1(set_rotation, int, degree)
-
 {
 	if (degree < 0 || degree >= 360)
 		return -EINVAL;
@@ -151,9 +154,7 @@ SYSCALL_DEFINE1(set_rotation, int, degree)
 	printk("set rotation to %d\n", cur_rotation);
 	spin_unlock(&ctx_lock);
 	
-	resolve_pending();
-
-	return 0;
+	return resolve_pending();
 }
 
 
