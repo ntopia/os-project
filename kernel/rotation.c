@@ -128,10 +128,7 @@ void resolve_pending(void)
 
 	spin_lock(&ctx_lock);
 	list_for_each_entry_safe(rotlock, next_rotlock, &pending, list) {
-		int degree = rotlock->degree;
-		int range = rotlock->range;
-		if (check_contains(degree,range, cur_rotation)
-				&& !find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
+		if (check_acquirable(rotlock)) {
 			mutex_unlock(&rotlock->lock);
 			list_del(&rotlock->list);
 			list_add_tail(&rotlock->list, &acquired);
