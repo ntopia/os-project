@@ -57,6 +57,7 @@ Writer cannot be overlapped, Readers can overlap each other.
 Writer can grap a lock if there are no overlapped locks that are already acquired.
 Reader can grap a lock if there are no overlapped writer locks acquired, and there are no (Reader, Writer) pair that those two overlap each other, Reader lock is acquired and Writer lock is pending.
 
+You can see the detail at `check_acquirable()` in `kernel/rotation.c`.
 
 ## Implementation
 
