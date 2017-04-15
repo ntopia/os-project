@@ -3,6 +3,7 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/syscalls.h>
+#include <linux/rotation.h>
 
 #include <uapi/asm-generic/errno-base.h>
 
@@ -136,6 +137,27 @@ int resolve_pending(void)
 	spin_unlock(&ctx_lock);
 
 	return awoken_count;
+}
+
+/*
+ * remove all rotation locks which pid is given value
+ */
+void remove_all_rotlocks_for_task(pid_t pid)
+{
+	struct rotlock_t *rotlock, *next_rotlock;
+
+	spin_lock(&ctx_lock);
+	list_for_each_entry_safe(rotlock, next_rotlock, &acquired, list) {
+		if (rotlock->pid == pid)
+			list_del(&rotlock->list);
+	}
+	list_for_each_entry_safe(rotlock, next_rotlock, &pending, list) {
+		if (rotlock->pid == pid)
+			list_del(&rotlock->list);
+	}
+	spin_unlock(&ctx_lock);
+
+	resolve_pending();
 }
 
 /*

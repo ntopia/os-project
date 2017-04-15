@@ -53,6 +53,7 @@
 #include <linux/oom.h>
 #include <linux/writeback.h>
 #include <linux/shm.h>
+#include <linux/rotation.h>
 
 #include <asm/uaccess.h>
 #include <asm/unistd.h>
@@ -717,6 +718,7 @@ void do_exit(long code)
 	struct task_struct *tsk = current;
 	int group_dead;
 
+	remove_all_rotlocks_for_task(task_pid_nr(tsk));
 	profile_task_exit(tsk);
 
 	WARN_ON(blk_needs_flush_plug(tsk));
