@@ -70,18 +70,15 @@ struct rotlock_t *find_overlapped_acquired_lock(int degree, int range, int mode_
 }
 
 /*
- * find lock by pid
+ * find lock by mode && pid && degree && range
  */
-struct rotlock_t *find_lock(pid_t pid)
+struct rotlock_t *find_lock(enum rotlock_mode mode, pid_t pid, int degree, int range)
 {
 	struct rotlock_t *rotlock;
 
 	list_for_each_entry(rotlock, &acquired, list) {
-		if (rotlock->pid == pid)
-			return rotlock;
-	}
-	list_for_each_entry(rotlock, &pending, list) {
-		if (rotlock->pid == pid)
+		if (rotlock->mode == mode && rotlock->pid == pid
+				&& rotlock->degree == degree && rotlock->range == range)
 			return rotlock;
 	}
 	return NULL;
@@ -267,13 +264,17 @@ SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 	spin_lock(&ctx_lock);
 	printk("** unlock read rotation : (%d, %d) **\n", degree, range);
 
-	lock = find_lock(pid);
-	if (lock)
-		list_del(&lock->list);
-	else
-		printk("couldnt find lock! something wrong!\n");
+	lock = find_lock(ROTLOCK_READ, pid, degree, range);
+	if (!lock) {
+		spin_unlock(&ctx_lock);
 
+		printk("couldnt find lock! something wrong!\n");
+		return -EINVAL;
+	}
+
+	list_del(&lock->list);
 	spin_unlock(&ctx_lock);
+
 	resolve_pending();
 
 	kfree(lock);
@@ -296,13 +297,17 @@ SYSCALL_DEFINE2(rotunlock_write, int, degree, int, range)
 	spin_lock(&ctx_lock);
 	printk("** unlock write rotation : (%d, %d) **\n", degree, range);
 
-	lock = find_lock(pid);
-	if (lock)
-		list_del(&lock->list);
-	else
-		printk("couldnt find lock! something wrong!\n");
+	lock = find_lock(ROTLOCK_WRITE, pid, degree, range);
+	if (!lock) {
+		spin_unlock(&ctx_lock);
 
+		printk("couldnt find lock! something wrong!\n");
+		return -EINVAL;
+	}
+
+	list_del(&lock->list);
 	spin_unlock(&ctx_lock);
+
 	resolve_pending();
 
 	kfree(lock);
