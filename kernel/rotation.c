@@ -72,7 +72,7 @@ struct rotlock_t *find_overlapped_acquired_lock(int degree, int range, int mode_
 /*
  * find lock by mode && pid && degree && range
  */
-struct rotlock_t *find_lock(enum rotlock_mode mode, pid_t pid, int degree, int range)
+struct rotlock_t *find_acquired_lock(enum rotlock_mode mode, pid_t pid, int degree, int range)
 {
 	struct rotlock_t *rotlock;
 
@@ -264,7 +264,7 @@ SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 	spin_lock(&ctx_lock);
 	printk("** unlock read rotation : (%d, %d) **\n", degree, range);
 
-	lock = find_lock(ROTLOCK_READ, pid, degree, range);
+	lock = find_acquired_lock(ROTLOCK_READ, pid, degree, range);
 	if (!lock) {
 		spin_unlock(&ctx_lock);
 
@@ -297,7 +297,7 @@ SYSCALL_DEFINE2(rotunlock_write, int, degree, int, range)
 	spin_lock(&ctx_lock);
 	printk("** unlock write rotation : (%d, %d) **\n", degree, range);
 
-	lock = find_lock(ROTLOCK_WRITE, pid, degree, range);
+	lock = find_acquired_lock(ROTLOCK_WRITE, pid, degree, range);
 	if (!lock) {
 		spin_unlock(&ctx_lock);
 
