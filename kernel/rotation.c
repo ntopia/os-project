@@ -196,12 +196,8 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 	spin_lock(&ctx_lock);
 	printk("** lock read rotation : (%d, %d) **\n", degree, range);
 
-	if (!check_contains(degree, range, cur_rotation)
-			|| find_overlapped_acquired_lock(degree, range, ROTLOCK_WRITE)) {
-
-		printk("there is an acquired lock overlapped with me.\n");
-		printk("or cur_rotation is not mine.\n");
-		printk("we should wait.\n");
+	if (!check_acquirable(new_lock)) {
+		printk("i am not acquirable now. i should wait.\n");
 
 		list_add_tail(&new_lock->list, &pending);
 		spin_unlock(&ctx_lock);
@@ -243,12 +239,8 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 	spin_lock(&ctx_lock);
 	printk("** lock write rotation : (%d, %d) **\n", degree, range);
 
-	if (!check_contains(degree, range, cur_rotation)
-			|| find_overlapped_acquired_lock(degree, range, ROTLOCK_READ | ROTLOCK_WRITE)) {
-
-		printk("there is an acquired lock overlapped with me.\n");
-		printk("or cur_rotation is not mine.\n");
-		printk("we should wait.\n");
+	if (!check_acquirable(new_lock)) {
+		printk("i am not acquirable now. i should wait.\n");
 
 		list_add_tail(&new_lock->list, &pending);
 		spin_unlock(&ctx_lock);
