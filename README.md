@@ -79,7 +79,7 @@ Finally, it has a mutex to implement wait condition.
 
 We need two lists: one manages acquired locks and the other manages pending locks. These two lists are defined at line 24~25 in `kernel/rotation.c`.
 
-Finally, we need a spinlock object that synchronize accesses to those lists. It is defined at line 26 in `kernel/rotation.c`.
+Finally, we need a spinlock object that synchronizes accesses to those lists. It is defined at line 26 in `kernel/rotation.c`.
 
 
 ### implementing wait condition
