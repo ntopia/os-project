@@ -205,8 +205,14 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 		 * wait until acquired
 		 */
 		mutex_init(&new_lock->lock);
-		mutex_lock(&new_lock->lock);
-		mutex_lock(&new_lock->lock);
+		if (mutex_lock_killable(&new_lock->lock) == -EINTR) {
+			kfree(new_lock);
+			return -EINTR;
+		}
+		if (mutex_lock_killable(&new_lock->lock) == -EINTR) {
+			kfree(new_lock);
+			return -EINTR;
+		}
 		mutex_unlock(&new_lock->lock);
 		spin_lock(&ctx_lock);
 	} else {
@@ -248,8 +254,14 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 		 * wait until acquired
 		 */
 		mutex_init(&new_lock->lock);
-		mutex_lock(&new_lock->lock);
-		mutex_lock(&new_lock->lock);
+		if (mutex_lock_killable(&new_lock->lock) == -EINTR) {
+			kfree(new_lock);
+			return -EINTR;
+		}
+		if (mutex_lock_killable(&new_lock->lock) == -EINTR) {
+			kfree(new_lock);
+			return -EINTR;
+		}
 		mutex_unlock(&new_lock->lock);
 		spin_lock(&ctx_lock);
 	} else {
