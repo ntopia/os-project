@@ -5,18 +5,18 @@ team 10 (Han Suhwan, Park Seongwon, Roh Yoonmi)
 ## Modified files
 
 ### kernel
-* `arch/arm/include/asm/unistd.h`: changed number of system calls
-* `arch/arm/kernel/calls.S`: added entries in jump table
-* `include/linux/rotation.h`: added function to remove locks from finished task
-* `include/linux/syscalls.h`: declared system calls
-* `kernel/exit.c`: remove locks from finished task
-* `kernel/rotation.c`: implementations
+* `arch/arm/include/asm/unistd.h` : changed number of system calls
+* `arch/arm/kernel/calls.S` line 392 : added entries in jump table
+* `include/linux/rotation.h` : added function to remove locks from finished task
+* `include/linux/syscalls.h` line 852 : declared system calls
+* `kernel/exit.c` line 721 : remove locks from finished task
+* `kernel/rotation.c` : implementations
 
 
-### tester
-* `tester/rot_test.c`: 
-* `tester/test.c`: 
-* `tester/test.h`: 
+### test program
+* `tester/selector.c`: *selector* implementation
+* `tester/trial.c`: *trial* implementation
+* `tester/test.h`: common header file for test programs
 
 
 ## How to run
@@ -28,14 +28,29 @@ build
 
 
 ### building test program
-TODO
+```
+cd tester
+make
+push selector /root/selector
+push trial /root/trial
+```
 
 
-### running test programs
-TODO
+### running test programs (inside artik console)
+selector
+```
+./selector [STARTING_INTEGER]
+```
+
+trial
+```
+./trial [INTEGER_IDENTIFIER]
+```
 
 
 ## Lock scheduling policy
+
+It is same as TA policy. (https://github.com/swsnu/osspr2017/issues/58)
 
 Lock can be acquired only when current rotation is inside range of lock.
 Writer cannot be overlapped, Readers can overlap each other.
@@ -53,11 +68,18 @@ Add system calls as we did in project 1, add entry points in jump table at `arch
 
 ### defining rotation lock data structure
 
-Defined at `kernel/rotation.c`, this structure are needed to store degree and range of lock, mode of lock(read or write), and pid.
+Defined at `kernel/rotation.c`, this structure are needed to store degree and range of lock, mode of lock(read or write), and task's pid.
 
 Since we are managing it with kernel list, it needs to have list_head variable.
 
 Finally, it has a mutex to implement wait condition.
+
+
+### defining rotation lock context
+
+We need two list that one is for managing acquired locks and the other is for managing pending locks. These two lists are defined at line 24~25 in `kernel/rotation.c`.
+
+Finally, we need a spinlock object that synchronize accesses to those lists. It is defined at line 26 in `kernel/rotation.c`.
 
 
 ### implementing wait condition
@@ -65,6 +87,8 @@ Finally, it has a mutex to implement wait condition.
 To implement waiting, each rotation lock has a mutex.
 When rotation lock requests cannot be acquired immediately, it initializes mutex in that rotation lock, and calls mutex lock twice. then the second lock call cannot be granted thus in deadlock condition.
 When pending rotation lock becomes possible to acquire a lock, it unlocks its mutex variable, then the second mutex lock call now can be granted, and deadlock is resolved.
+
+The tricky thing is that if you need to receive interrupts when waiting mutex, you should use `mutex_lock_interruptible()` or `mutex_lock_killable()` instead of `mutex_lock()`.
 
 
 ### implementing helper functions
@@ -101,7 +125,8 @@ Returns total number of awoken processes.
 
 #### remove\_all\_rotlocks\_for\_task
 
-Unlocks all locks which belongs to given process id.
+Unlocks all locks which belongs to given task's pid.
+
 
 ### implementing system calls
 
@@ -118,7 +143,6 @@ It returns resolve_pending, which will return number of newly acquired rotation 
 First check input value, then create a new lock and wait for spin lock.
 
 After spin lock is granted, check if it can be acquired immediately. if it is, add it to acquired list and returns. if not, add it to pending list and calls mutex_lock twice, then this system call will be finished when deadlock is resolved.
-
 
 #### rotunlock\_read and rotunlock\_write
 
