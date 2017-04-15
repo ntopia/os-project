@@ -85,15 +85,15 @@ struct rotlock_t *find_acquired_lock(enum rotlock_mode mode, pid_t pid, int degr
 	return NULL;
 }
 
-/* 
+/*
  * check if a lock can acquire the lock
  */
 bool check_acquirable(struct rotlock_t *lock)
 {
 	int degree = lock->degree, range = lock->range;
 	struct rotlock_t *pending_lock, *acquired_lock;
-	
-	if (!check_contains(degree, range, cur_rotation)) 
+
+	if (!check_contains(degree, range, cur_rotation))
 		return false;
 
 	if (lock->mode == ROTLOCK_WRITE) {
@@ -102,7 +102,7 @@ bool check_acquirable(struct rotlock_t *lock)
 		if (find_overlapped_acquired_lock(degree, range, ROTLOCK_WRITE))
 			return false;
 		list_for_each_entry(acquired_lock, &acquired, list) {
-			if (acquired_lock->mode != ROTLOCK_READ) 
+			if (acquired_lock->mode != ROTLOCK_READ)
 				continue;
 			list_for_each_entry(pending_lock, &pending, list) {
 				if (pending_lock->mode == ROTLOCK_WRITE
@@ -172,7 +172,7 @@ SYSCALL_DEFINE1(set_rotation, int, degree)
 	cur_rotation = degree;
 	printk("set rotation to %d\n", cur_rotation);
 	spin_unlock(&ctx_lock);
-	
+
 	return resolve_pending();
 }
 
