@@ -77,7 +77,7 @@ Finally, it has a mutex to implement wait condition.
 
 ### defining rotation lock context
 
-We need two list that one is for managing acquired locks and the other is for managing pending locks. These two lists are defined at line 24~25 in `kernel/rotation.c`.
+We need two lists: one manages acquired locks and the other manages pending locks. These two lists are defined at line 24~25 in `kernel/rotation.c`.
 
 Finally, we need a spinlock object that synchronize accesses to those lists. It is defined at line 26 in `kernel/rotation.c`.
 
@@ -88,7 +88,7 @@ To implement waiting, each rotation lock has a mutex.
 When rotation lock requests cannot be acquired immediately, it initializes mutex in that rotation lock, and calls mutex lock twice. then the second lock call cannot be granted thus in deadlock condition.
 When pending rotation lock becomes possible to acquire a lock, it unlocks its mutex variable, then the second mutex lock call now can be granted, and deadlock is resolved.
 
-The tricky thing is that if you need to receive interrupts when waiting mutex, you should use `mutex_lock_interruptible()` or `mutex_lock_killable()` instead of `mutex_lock()`.
+The tricky thing is that if you need to receive interrupts when waiting for mutex, you should use `mutex_lock_interruptible()` or `mutex_lock_killable()` instead of `mutex_lock()`.
 
 
 ### implementing helper functions
