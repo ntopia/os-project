@@ -5,18 +5,18 @@ team 10 (Han Suhwan, Park Seongwon, Roh Yoonmi)
 ## Modified files
 
 ### kernel
-`arch/arm/include/asm/unistd.h`: changed number of system calls
-`arch/arm/kernel/calls.S`: added entries in jump table
-`include/linux/rotation.h`: added function to remove locks from finished task
-`include/linux/syscalls.h`: declared system calls
-`kernel/exit.c`: remove locks from finished task
-`kernel/rotation.c`: implementations
+* `arch/arm/include/asm/unistd.h`: changed number of system calls
+* `arch/arm/kernel/calls.S`: added entries in jump table
+* `include/linux/rotation.h`: added function to remove locks from finished task
+* `include/linux/syscalls.h`: declared system calls
+* `kernel/exit.c`: remove locks from finished task
+* `kernel/rotation.c`: implementations
 
 
-###tester
-`tester/rot_test.c`: 
-`tester/test.c`: 
-`tester/test.h`: 
+### tester
+* `tester/rot_test.c`: 
+* `tester/test.c`: 
+* `tester/test.h`: 
 
 
 ## How to run
