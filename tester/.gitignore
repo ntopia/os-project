@@ -1,3 +1,4 @@
 *.o
 test
 rot_test
+selector
