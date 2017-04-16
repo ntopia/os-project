@@ -170,7 +170,7 @@ SYSCALL_DEFINE1(set_rotation, int, degree)
 
 	spin_lock(&ctx_lock);
 	cur_rotation = degree;
-	printk("set rotation to %d\n", cur_rotation);
+	//printk("set rotation to %d\n", cur_rotation);
 	spin_unlock(&ctx_lock);
 
 	return resolve_pending();
@@ -194,10 +194,10 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 	new_lock->pid = task_pid_nr(current);
 
 	spin_lock(&ctx_lock);
-	printk("** lock read rotation : (%d, %d) **\n", degree, range);
+	//printk("** lock read rotation : (%d, %d) **\n", degree, range);
 
 	if (!check_acquirable(new_lock)) {
-		printk("i am not acquirable now. i should wait.\n");
+		//printk("i am not acquirable now. i should wait.\n");
 
 		list_add_tail(&new_lock->list, &pending);
 		spin_unlock(&ctx_lock);
@@ -216,7 +216,7 @@ SYSCALL_DEFINE2(rotlock_read, int, degree, int, range)
 		mutex_unlock(&new_lock->lock);
 		spin_lock(&ctx_lock);
 	} else {
-		printk("ok. immediately get a lock!\n");
+		//printk("ok. immediately get a lock!\n");
 		list_add_tail(&new_lock->list, &acquired);
 	}
 
@@ -243,10 +243,10 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 	new_lock->pid = task_pid_nr(current);
 
 	spin_lock(&ctx_lock);
-	printk("** lock write rotation : (%d, %d) **\n", degree, range);
+	//printk("** lock write rotation : (%d, %d) **\n", degree, range);
 
 	if (!check_acquirable(new_lock)) {
-		printk("i am not acquirable now. i should wait.\n");
+		//printk("i am not acquirable now. i should wait.\n");
 
 		list_add_tail(&new_lock->list, &pending);
 		spin_unlock(&ctx_lock);
@@ -265,7 +265,7 @@ SYSCALL_DEFINE2(rotlock_write, int, degree, int, range)
 		mutex_unlock(&new_lock->lock);
 		spin_lock(&ctx_lock);
 	} else {
-		printk("ok. immediately get a lock!\n");
+		//printk("ok. immediately get a lock!\n");
 		list_add_tail(&new_lock->list, &acquired);
 	}
 
@@ -288,13 +288,13 @@ SYSCALL_DEFINE2(rotunlock_read, int, degree, int, range)
 
 	pid = task_pid_nr(current);
 	spin_lock(&ctx_lock);
-	printk("** unlock read rotation : (%d, %d) **\n", degree, range);
+	//printk("** unlock read rotation : (%d, %d) **\n", degree, range);
 
 	lock = find_acquired_lock(ROTLOCK_READ, pid, degree, range);
 	if (!lock) {
 		spin_unlock(&ctx_lock);
 
-		printk("couldnt find lock! something wrong!\n");
+		//printk("couldnt find lock! something wrong!\n");
 		return -EINVAL;
 	}
 
@@ -321,13 +321,13 @@ SYSCALL_DEFINE2(rotunlock_write, int, degree, int, range)
 
 	pid = task_pid_nr(current);
 	spin_lock(&ctx_lock);
-	printk("** unlock write rotation : (%d, %d) **\n", degree, range);
+	//printk("** unlock write rotation : (%d, %d) **\n", degree, range);
 
 	lock = find_acquired_lock(ROTLOCK_WRITE, pid, degree, range);
 	if (!lock) {
 		spin_unlock(&ctx_lock);
 
-		printk("couldnt find lock! something wrong!\n");
+		//printk("couldnt find lock! something wrong!\n");
 		return -EINVAL;
 	}
 
