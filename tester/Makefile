@@ -1,10 +1,16 @@
-all: selector
+CXX = arm-linux-gnueabi-gcc
+CXXFLAGS = -O2
 
-selector: selector.c
-	arm-linux-gnueabi-gcc selector.c -o selector
+all: rot_test selector trial
 
 rot_test: rot_test.c
-	arm-linux-gnueabi-gcc rot_test.c -o rot_test
+	$(CXX) -o $@ $^ $(CXXFLAGS)
+
+selector: selector.c
+	$(CXX) -o $@ $^ $(CXXFLAGS)
+
+trial: trial.c
+	$(CXX) -o $@ $^ $(CXXFLAGS)
 
 clean:
-	rm -f *.o test rot_test selector
+	rm -f *.o rot_test selector trial
