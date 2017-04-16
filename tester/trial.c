@@ -73,6 +73,7 @@ int main (int argc, char *argv[])
 			puts("cannot release lock");
 			return 0;
 		}
+		usleep(50000);
 	}
 
 	return 0;

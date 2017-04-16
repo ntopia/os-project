@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
 		printf("selector: %d\n", input++);
 
 		syscall(__NR_rotunlock_write, 90, 90);
+		usleep(50000);
 	}
 	return 0;
 }
