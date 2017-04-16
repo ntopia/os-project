@@ -10,7 +10,7 @@ team 10 (Han Suhwan, Park Seongwon, Roh Yoonmi)
 * `include/linux/rotation.h` : added function to remove locks from finished task
 * `include/linux/syscalls.h` line 852 : declared system calls
 * `kernel/exit.c` line 721 : remove locks from finished task
-* `kernel/rotation.c` : implementations
+* `kernel/rotation.c` : implements system calls
 
 
 ### test program
@@ -64,7 +64,9 @@ You can see the detail at `check_acquirable()` in `kernel/rotation.c`.
 ### adding system calls
 Actual functions and data structures are implemented in `kernel/rotation.c` and then modified kernel/Makefile to actually build it.
 
-Add system calls as we did in project 1, add entry points in jump table at `arch/arm/kernel/calls.S` and modified number of system calls at `arch/arm/include/asm/unistd.h`. there was an issue with system call number 384, so we used 385 instead. then defined system calls at `include/linux/syscalls.h`.
+Add system calls as we did in project 1, add entry points in jump table at `arch/arm/kernel/calls.S` and modified number of system calls at `arch/arm/include/asm/unistd.h`.
+There was an issue with system call number 384, so we used 385 instead.
+Then defined system calls at `include/linux/syscalls.h`.
 
 
 ### defining rotation lock data structure
@@ -80,13 +82,15 @@ Finally, it has a mutex to implement wait condition.
 
 We need two lists: one manages acquired locks and the other manages pending locks. These two lists are defined at line 24~25 in `kernel/rotation.c`.
 
-Finally, we need a spinlock object that synchronizes accesses to those lists. It is defined at line 26 in `kernel/rotation.c`.
+Finally, we need a spinlock object that synchronizes accesses to those lists.
+It is defined at line 26 in `kernel/rotation.c`.
 
 
 ### implementing wait condition
 
 To implement waiting, each rotation lock has a mutex.
-When rotation lock requests cannot be acquired immediately, it initializes mutex in that rotation lock, and calls mutex lock twice. then the second lock call cannot be granted thus in deadlock condition.
+When rotation lock requests cannot be acquired immediately, it initializes mutex in that rotation lock, and calls mutex lock twice.
+Then the second lock call cannot be granted thus in deadlock condition.
 When pending rotation lock becomes possible to acquire a lock, it unlocks its mutex variable, then the second mutex lock call now can be granted, and deadlock is resolved.
 
 The tricky thing is that if you need to receive interrupts when waiting for mutex, you should use `mutex_lock_interruptible()` or `mutex_lock_killable()` instead of `mutex_lock()`.
@@ -108,11 +112,13 @@ Given a range and a point, check if given point is inside of range.
 
 #### find\_overlapped\_acquired\_lock
 
-Given a range and mode, returns first lock that is acquired , matches given mode, and is overlapped. if no locks are found, returns NULL.
+Given a range and mode, returns first lock that is acquired, matches given mode, and is overlapped.
+If no locks are found, returns NULL.
 
 #### find\_acquired\_lock
 
-Given mode, pid and range, find a lock that matches all of given condition. if no locks are found, returns NULL.
+Given mode, pid and range, find a lock that matches all of given condition.
+If no locks are found, returns NULL.
 
 #### check_acquirable
 
@@ -120,7 +126,8 @@ Given lock, checks whether given lock can be acquired, following our policy.
 
 #### resolve_pending
 
-Called when locks are unlocked or rotation is changed. traverses pending list and acquire valid locks.
+Called when locks are unlocked or rotation is changed.
+Traverses pending list and acquire valid locks.
 
 Returns total number of awoken processes.
 
@@ -143,11 +150,14 @@ It returns resolve_pending, which will return number of newly acquired rotation 
 
 First check input value, then create a new lock and wait for spin lock.
 
-After spin lock is granted, check if it can be acquired immediately. if it is, add it to acquired list and returns. if not, add it to pending list and calls mutex_lock twice, then this system call will be finished when deadlock is resolved.
+After spin lock is granted, check if it can be acquired immediately.
+If it is, add it to acquired list and returns.
+If not, add it to pending list and calls mutex_lock twice, then this system call will be finished when deadlock is resolved.
 
 #### rotunlock\_read and rotunlock\_write
 
-First check input value, then find acquired lock that matched given condition. if there is one, release it.
+First check input value, then find acquired lock that matched given condition.
+If there is one, release it.
 
 Finally, resolve pending rotation locks and free allocated memory.
 
