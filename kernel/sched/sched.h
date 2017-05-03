@@ -1387,3 +1387,20 @@ static inline u64 irq_time_read(int cpu)
 }
 #endif /* CONFIG_64BIT */
 #endif /* CONFIG_IRQ_TIME_ACCOUNTING */
+
+/*
+ * OS Project 3
+ * Team 10
+ * Weighted Round Robin Run Queue
+ */
+
+struct wrr_rq {
+	raw_spinlock_t wrr_lock;
+
+	unsigned long nr_running;
+	struct list_head tasks;
+
+	struct sched_entity *curr, *next, *last;
+};
+
+
