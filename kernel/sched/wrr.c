@@ -1,4 +1,7 @@
 #include "sched.h"
+#include <linux/kernel.h>
+#include <linux/syscalls.h>
+#include <uapi/asm-generic/errno-base.h>
 
 #include <linux/slab.h>
 
@@ -17,6 +20,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	/* check task's policy */
 	/* check authority */
 	/* update the weight */
+	printk(KERN_ALERT"set_weight called\n");
 	return 0;
 }
 
@@ -29,6 +33,7 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 {
 	/* check task's policy */
 	/* return the value */
+	printk(KERN_ALERT"get_weight called\n");
 	return 0;
 }
 
