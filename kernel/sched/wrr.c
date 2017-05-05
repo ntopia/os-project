@@ -17,6 +17,8 @@ void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
  */
 SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 {
+	struct task_struct task;
+
 	/* check task's policy */
 	/* check authority */
 	/* update the weight */
