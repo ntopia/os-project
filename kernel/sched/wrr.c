@@ -7,6 +7,10 @@
 
 #include <uapi/asm-generic/errno-base.h>
 
+#define WRR_WEIGHT_MIN	1
+#define WRR_WEIGHT_MAX	20
+
+
 struct task_struct *find_task_by_pid(pid_t pid)
 {
 	struct task_struct *task = NULL;
@@ -37,7 +41,7 @@ void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
 SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 {
 	struct task_struct *task;
-	if (weight < 1 || weight > 20)
+	if (weight < WRR_WEIGHT_MIN || weight > WRR_WEIGHT_MAX)
 		return -EINVAL;
 
 	task = find_task_by_pid(pid);
