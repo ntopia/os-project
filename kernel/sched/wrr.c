@@ -25,7 +25,6 @@ struct task_struct *find_task_by_pid(pid_t pid)
 	
 	task = get_pid_task(p_struct, PIDTYPE_PID);
 	return task;
-	
 }
 
 void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
@@ -53,7 +52,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 
 	if (!current_uid())
 		task->wrr.weight = weight;
-	else if (task->wrr.weight > weight)
+	else if (current_uid() == task->cred->uid && task->wrr.weight > weight)
 		task->wrr.weight = weight;
 	else
 		return -EACCES;
