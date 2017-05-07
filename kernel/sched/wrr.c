@@ -7,9 +7,10 @@
 
 #include <uapi/asm-generic/errno-base.h>
 
-#define WRR_WEIGHT_MIN	1
-#define WRR_WEIGHT_MAX	20
-
+#define WRR_WEIGHT_MIN		1
+#define WRR_WEIGHT_MAX		20
+#define WRR_WEIGHT_DEFAULT	10
+#define WRR_BASE_TIME_SLICE	10
 
 
 void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
@@ -23,12 +24,52 @@ void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
 
 
 /*
+ * Check if the weight is valid for wrr
+ */
+static bool is_valid_wrr_weight(unsigned int weight)
+{
+	return (WRR_WEIGHT_MIN <= weight && weight <= WRR_WEIGHT_MAX);
+}
+
+/*
+ * Calculate time slice for wrr task
+ */
+static unsigned int calc_wrr_time_slice(unsigned int weight)
+{
+	return WRR_BASE_TIME_SLICE * weight;
+}
+
+/*
+ * Initialize wrr entity for newly enqueued task
+ */
+static void init_wrr_task(struct task_struct *p)
+{
+	struct sched_wrr_entity *wrr_entity;
+
+	if (p == NULL)
+		return;
+
+	wrr_entity = &p->wrr;
+	if (!is_valid_wrr_weight(wrr_entity->weight)) {
+		/* maybe newly created task */
+		wrr_entity->weight = WRR_WEIGHT_DEFAULT;
+	}
+	else {
+		/* requeued task */
+	}
+	wrr_entity->time_slice = calc_wrr_time_slice(wrr_entity->weight);
+}
+
+
+/*
  * Adding/removing a task to/from our data structure
  */
 static void enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct wrr_rq *wrr_rq = &rq->wrr;
 	struct sched_wrr_entity *wrr_entity = &p->wrr;
+
+	init_wrr_task(p);
 
 	list_add_tail(&wrr_entity->run_list, &wrr_rq->run_list);
 	wrr_rq->wrr_nr_running++;
