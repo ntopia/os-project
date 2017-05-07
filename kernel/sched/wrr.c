@@ -11,32 +11,40 @@
 #define WRR_WEIGHT_MAX	20
 
 
-struct task_struct *find_task_by_pid(pid_t pid)
-{
-	struct task_struct *task = NULL;
-	struct pid *p_struct = NULL;
-	
-	if (pid == 0)
-		return current;
-
-	p_struct = find_get_pid(pid);
-	if (!p_struct)
-		return NULL;
-	
-	task = get_pid_task(p_struct, PIDTYPE_PID);
-	return task;
-}
 
 void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
 {
 	raw_spin_lock_init(&wrr_rq->wrr_lock);
+	INIT_LIST_HEAD(&wrr_rq->run_list);
+}
+
+
+/*
+ * Adding/removing a task to/from our data structure
+ */
+static void enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
+{
+	struct wrr_rq *wrr_rq = &rq->wrr;
+	struct sched_wrr_entity *wrr_entity = &p->wrr;
+
+	list_add_tail(&wrr_entity->run_list, &wrr_rq->run_list);
+	wrr_rq->wrr_nr_running++;
+}
+
+static void dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
+{
+	struct wrr_rq *wrr_rq = &rq->wrr;
+	struct sched_wrr_entity *wrr_entity = &p->wrr;
+
+	list_del_init(&wrr_entity->run_list);
+	wrr_rq->wrr_nr_running--;
 }
 
 
 const struct sched_class wrr_sched_class = {
 	.next			= &fair_sched_class,
-//	.enqueue_task		= enqueue_task_wrr,
-//	.dequeue_task		= dequeue_task_wrr,
+	.enqueue_task		= enqueue_task_wrr,
+	.dequeue_task		= dequeue_task_wrr,
 //	.yield_task		= yield_task_wrr,
 
 //	.check_preempt_curr	= check_preempt_curr_wrr,
@@ -65,6 +73,22 @@ const struct sched_class wrr_sched_class = {
 //	.switched_to		= switched_to_wrr,
 };
 
+
+struct task_struct *find_task_by_pid(pid_t pid)
+{
+	struct task_struct *task = NULL;
+	struct pid *p_struct = NULL;
+	
+	if (pid == 0)
+		return current;
+
+	p_struct = find_get_pid(pid);
+	if (!p_struct)
+		return NULL;
+	
+	task = get_pid_task(p_struct, PIDTYPE_PID);
+	return task;
+}
 
 /*
  * Set the SCHED_WRR weight of process, as identified by 'pid'.

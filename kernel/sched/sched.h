@@ -368,14 +368,10 @@ struct rt_rq {
 struct wrr_rq {
 	raw_spinlock_t wrr_lock;
 
-	unsigned long nr_running;	/* number of runnalbe tasks */
+	unsigned int wrr_nr_running;	/* number of runnable tasks */
 	unsigned long weight_sum;	/* sum of weight in this rq */
 
-	/*
-	 * pointer to current/next/last task
-	 * TODO: replace with sched_wrr_entity
-	 */
-	struct sched_entity *curr, *next, *last;
+	struct list_head run_list;	/* head of task queue */
 };
 
 
