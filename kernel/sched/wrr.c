@@ -15,7 +15,10 @@
 void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
 {
 	raw_spin_lock_init(&wrr_rq->wrr_lock);
+
 	INIT_LIST_HEAD(&wrr_rq->run_list);
+	wrr_rq->wrr_nr_running = 0;
+	wrr_rq->weight_sum = 0;
 }
 
 
