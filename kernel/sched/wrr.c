@@ -117,14 +117,19 @@ static void requeue_task_wrr(struct rq *rq, struct task_struct *p, int head)
  */
 static struct task_struct *pick_next_task_wrr(struct rq *rq)
 {
+	struct sched_wrr_entity *wrr_se;
+	struct task_struct *p;
 	struct wrr_rq *wrr_rq = &rq->wrr;
-	struct sched_wrr_entity *wrr_entity;
 
 	if (list_empty(&wrr_rq->run_list))
 		return NULL;
 
-	wrr_entity = container_of(wrr_rq->run_list.next, struct sched_wrr_entity, run_list);
-	return wrr_task_of(wrr_entity);
+	wrr_se = container_of(wrr_rq->run_list.next, struct sched_wrr_entity, run_list);
+
+	p = wrr_task_of(wrr_se);
+	p->se.exec_start = rq->clock_task;
+
+	return p;
 }
 
 /*
@@ -144,9 +149,9 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *p)
  */
 static void set_curr_task_wrr(struct rq *rq)
 {
-	/*
-	 * Should we do something in here? I don't know...
-	 */
+	struct task_struct *p = rq->curr;
+
+	p->se.exec_start = rq->clock_task;
 }
 
 /*
