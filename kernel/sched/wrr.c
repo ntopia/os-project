@@ -93,6 +93,25 @@ static void dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	wrr_rq->weight_sum -= wrr_entity->weight;
 }
 
+/*
+ * If head == 0, p moves the front of wrr_rq.
+ * Else, p moves the end of wrr_rq.
+ */
+static void requeue_task_wrr(struct rq *rq, struct task_struct *p, int head)
+{
+	struct wrr_rq *wrr_rq = &rq->wrr;
+	struct sched_wrr_entity *wrr_se = &p->wrr;
+
+	if (head)
+		list_move(&wrr_se->run_list, &wrr_rq->run_list);
+	else
+		list_move_tail(&wrr_se->run_list, &wrr_rq->run_list);
+}
+
+/*
+ * This function chooses the most appropriate task eligible to run next.
+ * It just returns the front of wrr_rq.
+ */
 static struct task_struct *pick_next_task_wrr(struct rq *rq)
 {
 	struct wrr_rq *wrr_rq = &rq->wrr;
@@ -105,6 +124,48 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	return wrr_task_of(wrr_entity);
 }
 
+/*
+ * A scheduling class hook that informs the task's class
+ * that the given task is about to be switched out of the CPU
+ */
+static void put_prev_task_wrr(struct rq *rq, struct task_struct *p)
+{
+	/*
+	 * I think that we don't need to do something in this func
+	 */
+}
+
+/*
+ * This is called from time tick funcs (scheduler_tick(), hrtick()).
+ * Similar to task_tick_rt().
+ * This is called with HZ frequency.
+ */
+static void task_tick_wrr(struct rq *rq, struct task_struct *p, int queued)
+{
+	struct sched_wrr_entity *wrr_se = &p->wrr;
+
+	if (p->policy != SCHED_WRR)
+		return;
+
+	if (--p->wrr.time_slice)
+		return;
+
+	/*
+	 * Task's time slice is done
+	 */
+
+	p->wrr.time_slice = calc_wrr_time_slice(p->wrr.weight);
+
+	/*
+	 * Requeue to the end of queue
+	 * if we are the only element on the queue
+	 */
+	if (wrr_se->run_list.prev != wrr_se->run_list.next) {
+		requeue_task_wrr(rq, p, 0);
+		set_tsk_need_resched(p);
+	}
+}
+
 
 const struct sched_class wrr_sched_class = {
 	.next			= &fair_sched_class,
@@ -115,7 +176,7 @@ const struct sched_class wrr_sched_class = {
 //	.check_preempt_curr	= check_preempt_curr_wrr,
 
 	.pick_next_task		= pick_next_task_wrr,
-//	.put_prev_task		= put_prev_task_wrr,
+	.put_prev_task		= put_prev_task_wrr,
 
 #ifdef CONFIG_SMP
 //	.select_task_rq		= select_task_rq_wrr,
@@ -130,7 +191,7 @@ const struct sched_class wrr_sched_class = {
 #endif
 
 //	.set_curr_task		= set_curr_task_wrr,
-//	.task_tick		= task_tick_wrr,
+	.task_tick		= task_tick_wrr,
 
 //	.get_rr_interval	= get_rr_interval_wrr,
 
