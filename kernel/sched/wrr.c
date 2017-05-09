@@ -22,6 +22,13 @@ void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
 	wrr_rq->weight_sum = 0;
 }
 
+/*
+ * Get owner(task_struct) of given sched_wrr_entity
+ */
+static struct task_struct *wrr_task_of(struct sched_wrr_entity *wrr_se)
+{
+	return container_of(wrr_se, struct task_struct, wrr);
+}
 
 /*
  * Check if the weight is valid for wrr
@@ -86,6 +93,18 @@ static void dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	wrr_rq->weight_sum -= wrr_entity->weight;
 }
 
+static struct task_struct *pick_next_task_wrr(struct rq *rq)
+{
+	struct wrr_rq *wrr_rq = &rq->wrr;
+	struct sched_wrr_entity *wrr_entity;
+
+	if (list_empty(&wrr_rq->run_list))
+		return NULL;
+
+	wrr_entity = container_of(wrr_rq->run_list.next, struct sched_wrr_entity, run_list);
+	return wrr_task_of(wrr_entity);
+}
+
 
 const struct sched_class wrr_sched_class = {
 	.next			= &fair_sched_class,
@@ -95,7 +114,7 @@ const struct sched_class wrr_sched_class = {
 
 //	.check_preempt_curr	= check_preempt_curr_wrr,
 
-//	.pick_next_task		= pick_next_task_wrr,
+	.pick_next_task		= pick_next_task_wrr,
 //	.put_prev_task		= put_prev_task_wrr,
 
 #ifdef CONFIG_SMP
