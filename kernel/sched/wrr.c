@@ -139,6 +139,17 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *p)
 }
 
 /*
+ * This function is called
+ * when a task changes its scheduling class or task group
+ */
+static void set_curr_task_wrr(struct rq *rq)
+{
+	/*
+	 * Should we do something in here? I don't know...
+	 */
+}
+
+/*
  * This is called from time tick funcs (scheduler_tick(), hrtick()).
  * Similar to task_tick_rt().
  * This is called with HZ frequency.
@@ -193,7 +204,7 @@ const struct sched_class wrr_sched_class = {
 //	.switched_from		= switched_from_wrr,
 #endif
 
-//	.set_curr_task		= set_curr_task_wrr,
+	.set_curr_task		= set_curr_task_wrr,
 	.task_tick		= task_tick_wrr,
 
 //	.get_rr_interval	= get_rr_interval_wrr,
