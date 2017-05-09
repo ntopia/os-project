@@ -10,7 +10,7 @@
 #define WRR_WEIGHT_MIN		1
 #define WRR_WEIGHT_MAX		20
 #define WRR_WEIGHT_DEFAULT	10
-#define WRR_BASE_TIME_SLICE	10
+#define WRR_BASE_TIME_IN_MS	10
 
 
 void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
@@ -40,10 +40,13 @@ static bool is_valid_wrr_weight(unsigned int weight)
 
 /*
  * Calculate time slice for wrr task
+ * 1s ->	task_tick() is called HZ times
+ * 1ms ->				HZ/1000 times
+ * (weight*base)ms ->			weight*base*HZ/1000 times
  */
 static unsigned int calc_wrr_time_slice(unsigned int weight)
 {
-	return WRR_BASE_TIME_SLICE * weight;
+	return weight * WRR_BASE_TIME_IN_MS * HZ / 1000;
 }
 
 /*
