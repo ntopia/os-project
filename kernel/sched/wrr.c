@@ -185,12 +185,18 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *p, int queued)
 	}
 }
 
+static void yield_task_wrr(struct rq *rq)
+{
+	requeue_task_wrr(rq, rq->curr, 0);
+	return;
+}
+
 
 const struct sched_class wrr_sched_class = {
 	.next			= &fair_sched_class,
 	.enqueue_task		= enqueue_task_wrr,
 	.dequeue_task		= dequeue_task_wrr,
-//	.yield_task		= yield_task_wrr,
+	.yield_task		= yield_task_wrr,
 
 //	.check_preempt_curr	= check_preempt_curr_wrr,
 
