@@ -3859,6 +3859,8 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
 			do_set_cpus_allowed(p, &hmp_slow_cpu_mask);
 #endif
 	}
+	else if (p->policy == SCHED_WRR)
+		p->sched_class = &wrr_sched_class;
 	else
 		p->sched_class = &fair_sched_class;
 	set_load_weight(p);
