@@ -191,6 +191,15 @@ static void yield_task_wrr(struct rq *rq)
 	return;
 }
 
+static void check_preempt_curr_wrr(struct rq *rq, struct task_struct *p, int flags)
+{
+	/*
+	 * if class is different, it is handled at check_preempt_curr at core.c
+	 * otherwise, all wrr task has the same priority
+	 * hence we do nothing here
+	 */
+}
+
 
 const struct sched_class wrr_sched_class = {
 	.next			= &fair_sched_class,
@@ -198,7 +207,7 @@ const struct sched_class wrr_sched_class = {
 	.dequeue_task		= dequeue_task_wrr,
 	.yield_task		= yield_task_wrr,
 
-//	.check_preempt_curr	= check_preempt_curr_wrr,
+	.check_preempt_curr	= check_preempt_curr_wrr,
 
 	.pick_next_task		= pick_next_task_wrr,
 	.put_prev_task		= put_prev_task_wrr,
