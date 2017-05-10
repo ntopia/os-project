@@ -188,7 +188,6 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *p, int queued)
 static void yield_task_wrr(struct rq *rq)
 {
 	requeue_task_wrr(rq, rq->curr, 0);
-	return;
 }
 
 static void check_preempt_curr_wrr(struct rq *rq, struct task_struct *p, int flags)
