@@ -314,9 +314,8 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	if (task->policy != SCHED_WRR) 
 		return -EINVAL;
 
-	if (!current_uid())
-		task->wrr.weight = weight;
-	else if (current_uid() == task->cred->uid && task->wrr.weight > weight)
+	if (!current_uid()
+	    || current_uid() == task->cred->uid && task->wrr.weight > weight)
 		task->wrr.weight = weight;
 	else
 		return -EACCES;
