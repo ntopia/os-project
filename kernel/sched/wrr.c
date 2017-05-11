@@ -304,6 +304,7 @@ struct task_struct *find_task_by_pid(pid_t pid)
 SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 {
 	struct task_struct *task;
+	struct rq *rq;
 	if (weight < WRR_WEIGHT_MIN || weight > WRR_WEIGHT_MAX)
 		return -EINVAL;
 
@@ -315,8 +316,13 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 		return -EINVAL;
 
 	if (!current_uid()
-	    || current_uid() == task->cred->uid && task->wrr.weight > weight)
+		|| current_uid() == task->cred->uid && task->wrr.weight > weight) {
+		if (task->state == TASK_RUNNING) {
+			rq = task_rq(task);
+			rq->wrr_rq->weigthsum += weight - task->wrr.weight;
+		}
 		task->wrr.weight = weight;
+	}
 	else
 		return -EACCES;
 	return 0;
