@@ -7,6 +7,7 @@
 #include <linux/interrupt.h>
 
 #include <uapi/asm-generic/errno-base.h>
+#include <linux/sched/wrr.h>
 
 void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
 {
