@@ -8,12 +8,6 @@
 
 #include <uapi/asm-generic/errno-base.h>
 
-#define WRR_WEIGHT_MIN		1
-#define WRR_WEIGHT_MAX		20
-#define WRR_WEIGHT_DEFAULT	10
-#define WRR_BASE_TIME_IN_MS	10
-
-
 void init_wrr_rq(struct wrr_rq *wrr_rq, struct rq *rq)
 {
 	raw_spin_lock_init(&wrr_rq->wrr_lock);
