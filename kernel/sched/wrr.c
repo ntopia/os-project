@@ -315,11 +315,11 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	if (task->policy != SCHED_WRR) 
 		return -EINVAL;
 
-	if (!current_uid()
+	if (!current_uid() \
 		|| current_uid() == task->cred->uid && task->wrr.weight > weight) {
 		if (task->state == TASK_RUNNING) {
 			rq = task_rq(task);
-			rq->wrr_rq->weigthsum += weight - task->wrr.weight;
+			rq->wrr.weight_sum += weight - task->wrr.weight;
 		}
 		task->wrr.weight = weight;
 	}
