@@ -317,7 +317,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 
 	if (!current_uid() \
 		|| current_uid() == task->cred->uid && task->wrr.weight > weight) {
-		if (task->state == TASK_RUNNING) {
+		if (task->on_rq == TASK_ON_RQ_QUEUED) {
 			rq = task_rq(task);
 			rq->wrr.weight_sum += weight - task->wrr.weight;
 		}
