@@ -248,6 +248,20 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 }
 
 
+#ifdef CONFIG_SMP
+
+void trigger_wrr_load_balance(struct rq *rq, int cpu)
+{
+	if (cpu != 0)
+		return;
+
+	/* Do balancing */
+}
+
+#endif
+
+
+
 const struct sched_class wrr_sched_class = {
 	.next			= &fair_sched_class,
 	.enqueue_task		= enqueue_task_wrr,
