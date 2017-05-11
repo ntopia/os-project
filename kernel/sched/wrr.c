@@ -279,6 +279,10 @@ const struct sched_class wrr_sched_class = {
 	.switched_to		= switched_to_wrr,
 };
 
+__init void init_sched_wrr_class(void)
+{
+}
+
 
 struct task_struct *find_task_by_pid(pid_t pid)
 {
