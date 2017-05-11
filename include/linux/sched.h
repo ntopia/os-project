@@ -1060,13 +1060,6 @@ struct sched_wrr_entity {
 	unsigned long watchdog_stamp;
 	unsigned int time_slice;
 	unsigned int weight;
-
-	struct sched_wrr_entity *back;
-	struct sched_wrr_entity	*parent;
-	/* wrr on which this entity is (to be) queued: */
-	struct wrr_rq		*wrr_rq;
-	/* wrr "owned" by this entity/group: */
-	struct wrr_rq		*my_q;
 };
 
 struct rcu_node;
