@@ -315,7 +315,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	if (task->policy != SCHED_WRR) 
 		return -EINVAL;
 
-	if (!current_uid() \
+	if (!current_uid()
 		|| current_uid() == task->cred->uid && task->wrr.weight > weight) {
 		if (task->on_rq == TASK_ON_RQ_QUEUED) {
 			rq = task_rq(task);
