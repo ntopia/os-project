@@ -1072,6 +1072,7 @@ enum perf_event_task_context {
 };
 
 /* task_struct::on_rq states: */
+#define TASK_ON_RQ_NOT_QUEUED	0
 #define TASK_ON_RQ_QUEUED	1
 #define TASK_ON_RQ_MIGRATING	2
 
