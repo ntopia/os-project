@@ -4,6 +4,7 @@
 #include <linux/slab.h>
 #include <linux/pid.h>
 #include <linux/cred.h>
+#include <linux/interrupt.h>
 
 #include <uapi/asm-generic/errno-base.h>
 
@@ -250,12 +251,28 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 
 #ifdef CONFIG_SMP
 
+u64 last_wrr_rebalance_time = 0;
+
 void trigger_wrr_load_balance(struct rq *rq, int cpu)
 {
+	u64 delta, cur;
 	if (cpu != 0)
 		return;
 
-	/* Do balancing */
+	cur = sched_clock_cpu(cpu);
+	delta = cur - last_wrr_rebalance_time;
+	if (delta >= 1990000000) {	/* 2000ms */
+		raise_softirq(SCHED_WRR_SOFTIRQ);
+		last_wrr_rebalance_time = cur;
+	}
+}
+
+static void run_wrr_rebalance(struct softirq_action *h)
+{
+	int this_cpu = smp_processor_id();
+	/* printk(KERN_ALERT "run_wrr_rebalance!!! %d\n", this_cpu); */
+
+	/* Do load-balancing ! */
 }
 
 #endif
@@ -295,6 +312,9 @@ const struct sched_class wrr_sched_class = {
 
 __init void init_sched_wrr_class(void)
 {
+#ifdef CONFIG_SMP
+	open_softirq(SCHED_WRR_SOFTIRQ, run_wrr_rebalance);
+#endif
 }
 
 
