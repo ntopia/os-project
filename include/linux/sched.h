@@ -1071,6 +1071,10 @@ enum perf_event_task_context {
 	perf_nr_task_contexts,
 };
 
+/* task_struct::on_rq states: */
+#define TASK_ON_RQ_QUEUED	1
+#define TASK_ON_RQ_MIGRATING	2
+
 struct task_struct {
 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
 	void *stack;
