@@ -253,6 +253,12 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 
 u64 last_wrr_rebalance_time = 0;
 
+/*
+ * This function triggers load-balancing. (Only cpu 0 can trigger)
+ * First, it checks time if it should kick load-balance now.
+ * If now is the time, then raise softirq to kick real load-balancing.
+ * (Inspired by trigger_load_balance() in fair.c)
+ */
 void trigger_wrr_load_balance(struct rq *rq, int cpu)
 {
 	u64 delta, cur;
@@ -267,6 +273,9 @@ void trigger_wrr_load_balance(struct rq *rq, int cpu)
 	}
 }
 
+/*
+ * This function does real load-balancing.
+ */
 static void run_wrr_rebalance(struct softirq_action *h)
 {
 	int this_cpu = smp_processor_id();
