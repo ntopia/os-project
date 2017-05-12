@@ -1,8 +1,19 @@
+CXX = arm0linux-gnueabi-gcc
+GCCFLAGS = -O2
+
+
+all: wrrtool trial
+
+trial: trial.c trial.h
+	$(CXX) -o $@ $^ $(CXXFLAGS)
+
 wrrtool: wrrtool.c test.h
-	arm-linux-gnueabi-gcc wrrtool.c -o wrrtool
+	$(CXX) -o $@ $^ $(CXXFLAGS)
+
 temp: temp.c
-	arm-linux-gnueabi-gcc temp.c -o temp
+	$(CXX) -o $@ $^ $(CXXFLAGS)
+
 clean:
-	rm -f temp test *.o
+	rm -f temp wrrtool trial *.o
 
 
