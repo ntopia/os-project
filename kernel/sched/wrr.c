@@ -235,7 +235,26 @@ static void check_preempt_curr_wrr(struct rq *rq, struct task_struct *p, int fla
 
 static int select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 {
-	return task_cpu(p);
+	int cpu = task_cpu(p);
+	int new_cpu = cpu;
+
+	if (p->nr_cpus_allowed == 1)
+		return new_cpu;
+
+	int weight = cpu_rq(cpu)->wrr.weight_sum;
+
+	/*
+	 * maybe we need lock here
+	 */
+	for_each_possible_cpu(cpu) {
+		int tmp_weight = cpu_rq(cpu)->wrr.weight_sum;
+		if (tmp_weight < weight) {
+			weight = tmp_weight;
+			new_cpu = cpu;
+		}
+	}
+
+	return new_cpu;
 }
 
 static void rq_online_wrr(struct rq *rq)
