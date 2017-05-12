@@ -241,13 +241,13 @@ static int select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 	if (p->nr_cpus_allowed == 1)
 		return new_cpu;
 
-	int weight = cpu_rq(cpu)->wrr.weight_sum;
+	unsigned long weight = cpu_rq(cpu)->wrr.weight_sum;
 
 	/*
 	 * maybe we need lock here
 	 */
 	for_each_possible_cpu(cpu) {
-		int tmp_weight = cpu_rq(cpu)->wrr.weight_sum;
+		unsigned long tmp_weight = cpu_rq(cpu)->wrr.weight_sum;
 		if (tmp_weight < weight) {
 			weight = tmp_weight;
 			new_cpu = cpu;
