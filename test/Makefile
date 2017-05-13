@@ -1,10 +1,10 @@
-CXX = arm0linux-gnueabi-gcc
+CXX = arm-linux-gnueabi-gcc
 GCCFLAGS = -O2
 
 
 all: wrrtool trial
 
-trial: trial.c trial.h
+trial: trial.c test.h
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
 wrrtool: wrrtool.c test.h
