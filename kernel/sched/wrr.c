@@ -113,6 +113,8 @@ static void dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	struct wrr_rq *wrr_rq = &rq->wrr;
 	struct sched_wrr_entity *wrr_entity = &p->wrr;
 
+	update_curr_wrr(rq);
+
 	list_del_init(&wrr_entity->run_list);
 	wrr_rq->wrr_nr_running--;
 	wrr_rq->weight_sum -= wrr_entity->weight;
@@ -160,6 +162,7 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
  */
 static void put_prev_task_wrr(struct rq *rq, struct task_struct *p)
 {
+	update_curr_wrr(rq);
 	/*
 	 * I think that we don't need to do something in this func
 	 */
@@ -184,6 +187,8 @@ static void set_curr_task_wrr(struct rq *rq)
 static void task_tick_wrr(struct rq *rq, struct task_struct *p, int queued)
 {
 	struct sched_wrr_entity *wrr_se = &p->wrr;
+
+	update_curr_wrr(rq);
 
 	if (p->policy != SCHED_WRR)
 		return;
