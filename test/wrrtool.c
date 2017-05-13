@@ -26,7 +26,7 @@ int main()
 		printf("\t> input\t: ");
 		scanf("%s", cmd);
 
-		for (int i = 0; cmd[i] != '\0'; i++) {
+		for (i = 0; cmd[i] != '\0'; i++) {
 			if (cmd[i] >= 'a') cmd[i] -= 32;
 		}
 
@@ -53,7 +53,10 @@ int main()
 				scanf("%d", &i);
 				printf("  > Get Weight - pid [%d]\n", i);
 				ret = syscall(__NR_sched_getweight, i);
-				printf("\t  > [%d]'s weight: %ld\n", i, ret);
+				if (ret > 0)
+					printf("\t  > [%d]'s weight: %ld\n", i, ret);
+				else
+					printf("\t  > failed\n");
 			} else {
 				printf("  > invalid command: [%s]\n", cmd);
 				continue;
