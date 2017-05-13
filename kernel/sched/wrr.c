@@ -322,6 +322,20 @@ __init void init_sched_wrr_class(void)
 }
 
 
+#ifdef CONFIG_SCHED_DEBUG
+extern void print_wrr_rq(struct seq_file *m, int cpu, struct wrr_rq *wrr_rq);
+
+void print_wrr_stats(struct seq_file *m, int cpu)
+{
+	struct rq *rq = cpu_rq(cpu);
+	struct wrr_rq *wrr_rq = &rq->wrr;
+
+	print_wrr_rq(m, cpu, wrr_rq);
+}
+
+#endif /* CONFIG_SCHED_DEBUG */
+
+
 struct task_struct *find_task_by_pid(pid_t pid)
 {
 	struct task_struct *task = NULL;
