@@ -7,8 +7,6 @@
 
 #include "test.h"
 
-char buf[12];
-
 int main (int argc, char *argv[])
 {
 	int pid = getpid();
