@@ -327,9 +327,30 @@ void trigger_wrr_load_balance(struct rq *rq, int cpu)
  */
 static void run_wrr_rebalance(struct softirq_action *h)
 {
+	int cpu;
 	int this_cpu = smp_processor_id();
-	/* printk(KERN_ALERT "run_wrr_rebalance!!! %d\n", this_cpu); */
+	int min_cpu = this_cpu;
+	int max_cpu = this_cpu;
+	unsigned long min_weight = cpu_rq(this_cpu)->wrr.weight_sum;
+	unsigned long max_weight = min_weight;
 
+	rcu_read_lock();
+	for_each_online_cpu(cpu) {
+		unsigned long tmp_weight = cpu_rq(cpu)->wrr.weight_sum;
+		if (tmp_weight < min_weight) {
+			min_weight = tmp_weight;
+			min_cpu = cpu;
+		} else if (tmp_weight > max_weight) {
+			max_weight = tmp_weight;
+			max_cpu = cpu;
+		}
+	}
+	/*
+	 * maybe we should unlock later
+	 */
+	rcu_read_unlock();
+	if (min_cpu == max_cpu)
+		return;
 	/* Do load-balancing ! */
 }
 
