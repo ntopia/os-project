@@ -365,7 +365,9 @@ void print_wrr_stats(struct seq_file *m, int cpu)
 	struct rq *rq = cpu_rq(cpu);
 	struct wrr_rq *wrr_rq = &rq->wrr;
 
+	rcu_read_lock();
 	print_wrr_rq(m, cpu, wrr_rq);
+	rcu_read_unlock();
 }
 
 #endif /* CONFIG_SCHED_DEBUG */
