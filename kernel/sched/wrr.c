@@ -45,6 +45,33 @@ static unsigned int calc_wrr_time_slice(unsigned int weight)
 	return weight * WRR_BASE_TIME_IN_MS * HZ / 1000;
 }
 
+
+/*
+ * Update the current task's runtime statistics. Skip current tasks that
+ * are not in our scheduling class.
+ */
+static void update_curr_wrr(struct rq *rq)
+{
+	struct task_struct *curr = rq->curr;
+	u64 delta_exec;
+
+	if (curr->sched_class != &wrr_sched_class)
+		return;
+
+	delta_exec = rq->clock_task - curr->se.exec_start;
+	if (unlikely((s64)delta_exec <= 0))
+		return;
+
+	schedstat_set(curr->se.statistics.exec_max,
+			max(curr->se.statistics.exec_max, delta_exec));
+
+	curr->se.sum_exec_runtime += delta_exec;
+	account_group_exec_runtime(curr, delta_exec);
+
+	curr->se.exec_start = rq->clock_task;
+	cpuacct_charge(curr, delta_exec);
+}
+
 /*
  * Initialize wrr entity for newly enqueued task
  */
@@ -65,7 +92,6 @@ static void init_wrr_task(struct task_struct *p)
 	}
 	wrr_entity->time_slice = calc_wrr_time_slice(wrr_entity->weight);
 }
-
 
 /*
  * Adding/removing a task to/from our data structure
