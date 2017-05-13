@@ -11,7 +11,7 @@
 
 int i, j;
 long ret;
-struct sched_param *param;
+struct sched_param param;
 char cmd[100];
 const char *helps = "\t\t=== commands ===\n"
 "  SPW [pid]\t\t: Set [pid] Policy Wrr\n"
@@ -39,23 +39,25 @@ int main()
 		} else {
 			ret = 0;
 			if (strncmp(cmd, "SPW", 3) == 0) {
-				param->sched_priority = 0;
 				scanf("%d", &i);
 				printf("  > Set Policy Wrr - pid [%d]\n", i);
-				ret = sched_setscheduler(i, SCHED_WRR, param);
+				param.sched_priority = 0;
+				ret = sched_setscheduler(i, SCHED_WRR, &param);
+				printf("\t  > %s\n", ret?"failed":"successed");
 			} else if (strncmp(cmd, "SW", 2) == 0 ) {
 				scanf("%d %d", &i, &j);
 				printf("  > Set Weight - pid [%d] weight [%d]\n", i, j);
-				ret = syscall(__NR_sched_setweight, i);
+				ret = syscall(__NR_sched_setweight, i, j);
+				printf("\t  > %s\n", ret?"failed":"successed");
 			} else if (strncmp(cmd, "GW", 2) == 0) {
 				scanf("%d", &i);
-				printf("  > Get Weight - weight [%d]\n", i);
+				printf("  > Get Weight - pid [%d]\n", i);
 				ret = syscall(__NR_sched_getweight, i);
+				printf("\t  > [%d]'s weight: %ld\n", i, ret);
 			} else {
 				printf("  > invalid command: [%s]\n", cmd);
 				continue;
 			}
-			printf("  > return value: %ld\n", ret);
 		}
 	}
 
