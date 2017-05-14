@@ -340,7 +340,7 @@ static void run_wrr_rebalance(struct softirq_action *h)
 	int this_cpu = smp_processor_id();
 	int min_cpu = this_cpu;
 	int max_cpu = this_cpu;
-	struct list_head wrr_rq;
+	struct list_head *wrr_rq_head;
 	struct sched_wrr_entity *wrr_pos;
 	struct sched_wrr_entity *wrr_target = NULL;
 	unsigned long min_weight = cpu_rq(this_cpu)->wrr.weight_sum;
@@ -372,15 +372,15 @@ static void run_wrr_rebalance(struct softirq_action *h)
 	
 	local_irq_save(flags);
 	double_rq_lock(cpu_rq(max_cpu), cpu_rq(min_cpu));
-	wrr_rq = cpu_rq(max_cpu)->wrr.run_list;
-	list_for_each_entry(wrr_pos, &wrr_rq, run_list) {
-		if (wrr_pos->weight > limit_weight)
-			return;
-		if (wrr_pos->weight > max_weight && !wrr_running(wrr_pos, max_cpu)) {
+	wrr_rq_head = &cpu_rq(max_cpu)->wrr.run_list;
+	
+	list_for_each_entry(wrr_pos, wrr_rq_head, run_list) {
+		if (wrr_pos->weight <= limit_weight && wrr_pos->weight > max_weight && !wrr_running(wrr_pos, max_cpu)) {
 			max_weight = wrr_pos->weight;
 			wrr_target = wrr_pos;
 		}
 	}
+
 	if (wrr_target == NULL) {
 		double_rq_unlock(cpu_rq(max_cpu), cpu_rq(min_cpu));
 		local_irq_restore(flags);
@@ -390,6 +390,7 @@ static void run_wrr_rebalance(struct softirq_action *h)
 	update_curr_wrr(cpu_rq(max_cpu));
 	dequeue_wrr(wrr_target, &cpu_rq(max_cpu)->wrr);
 	dec_nr_running(cpu_rq(max_cpu));
+
 	// append target to min
 	enqueue_wrr(wrr_target, &cpu_rq(min_cpu)->wrr);
 	inc_nr_running(cpu_rq(min_cpu));
