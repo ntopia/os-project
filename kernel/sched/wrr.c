@@ -73,6 +73,18 @@ static void update_curr_wrr(struct rq *rq)
 }
 
 /*
+ * Update wrr_entity's timeslice if it is not running.
+ */
+static void update_wrr_timeslice(struct sched_wrr_entity *wrr_entity)
+{
+	// check if wrr is running
+	if (wrr_running(wrr_entity))
+		return;
+	// update timeslice
+	wrr_entity->time_slice = calc_wrr_time_slice(wrr_entity->weight);
+}
+
+/*
  * Initialize wrr entity for newly enqueued task
  */
 static void init_wrr(struct sched_wrr_entity *wrr_entity)
@@ -134,8 +146,10 @@ static void requeue_task_wrr(struct rq *rq, struct task_struct *p, int head)
 	struct wrr_rq *wrr_rq = &rq->wrr;
 	struct sched_wrr_entity *wrr_se = &p->wrr;
 
-	if (head)
+	if (head) {
 		list_move(&wrr_se->run_list, &wrr_rq->run_list);
+		update_wrr_timeslice(wrr_se);
+	}
 	else
 		list_move_tail(&wrr_se->run_list, &wrr_rq->run_list);
 }
@@ -470,15 +484,6 @@ struct task_struct *find_task_by_pid(pid_t pid)
 
 	task = get_pid_task(p_struct, PIDTYPE_PID);
 	return task;
-}
-
-static void update_wrr_timeslice(struct sched_wrr_entity *wrr_entity)
-{
-	// check if wrr is running
-	if (wrr_running(wrr_entity))
-		return;
-	// update timeslice
-	wrr_entity->time_slice = calc_wrr_time_slice(wrr_entity->weight);
 }
 
 /*
