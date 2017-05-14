@@ -12,6 +12,7 @@ int main (int argc, char *argv[])
 	int pid = getpid();
 	srand(time(NULL));
 	while (1) {
+		clock_t t = clock();
 		int x = rand();
 		printf("trial[%d]: %d =",pid,x);
 		char first = 1;
@@ -35,7 +36,8 @@ int main (int argc, char *argv[])
 				x /= d;
 			}
 		}
-		puts("");
+		t = clock() - t;
+		printf("\n time elapsed = %lf\n", ((double)t)/CLOCKS_PER_SEC);
 		usleep(50000);
 	}
 
