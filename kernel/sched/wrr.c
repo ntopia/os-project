@@ -368,7 +368,7 @@ static void run_wrr_rebalance(struct softirq_action *h)
 		return;
 
 	/* Do load-balancing ! */
-	limit_weight = max_weight - min_weight;
+	limit_weight = (max_weight - min_weight)/2;
 	max_weight = 0;
 	
 	local_irq_save(flags);
