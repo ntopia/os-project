@@ -9,11 +9,15 @@
 
 int main (int argc, char *argv[])
 {
-	int pid = getpid();
+	int x = 1000000007;
 	srand(time(NULL));
+	int pid = getpid();
 	while (1) {
 		clock_t t = clock();
-		int x = rand();
+		if (argc > 1)
+			x = rand();
+		else
+			x = 1000000007;
 		printf("trial[%d]: %d =",pid,x);
 		char first = 1;
 		while ((x&1) == 0) {
@@ -38,7 +42,6 @@ int main (int argc, char *argv[])
 		}
 		t = clock() - t;
 		printf("\n time elapsed = %lf\n", ((double)t)/CLOCKS_PER_SEC);
-		usleep(50000);
 	}
 
 	return 0;
