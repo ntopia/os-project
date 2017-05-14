@@ -346,6 +346,7 @@ static void run_wrr_rebalance(struct softirq_action *h)
 	unsigned long min_weight = cpu_rq(this_cpu)->wrr.weight_sum;
 	unsigned long max_weight = min_weight;
 	unsigned long limit_weight;
+	unsigned long flags;
 
 	rcu_read_lock();
 	for_each_online_cpu(cpu) {
@@ -368,6 +369,8 @@ static void run_wrr_rebalance(struct softirq_action *h)
 	/* Do load-balancing ! */
 	limit_weight = max_weight - min_weight;
 	max_weight = 0;
+	
+	local_irq_save(flags);
 	double_rq_lock(cpu_rq(max_cpu), cpu_rq(min_cpu));
 	wrr_rq = cpu_rq(max_cpu)->wrr.run_list;
 	list_for_each_entry(wrr_pos, &wrr_rq, run_list) {
@@ -380,6 +383,7 @@ static void run_wrr_rebalance(struct softirq_action *h)
 	}
 	if (wrr_target == NULL) {
 		double_rq_unlock(cpu_rq(max_cpu), cpu_rq(min_cpu));
+		local_irq_restore(flags);
 		return;
 	}
 	// remove target from max
@@ -391,6 +395,7 @@ static void run_wrr_rebalance(struct softirq_action *h)
 	inc_nr_running(cpu_rq(min_cpu));
 
 	double_rq_unlock(cpu_rq(max_cpu), cpu_rq(min_cpu));
+	local_irq_restore(flags);
 }
 
 #endif
