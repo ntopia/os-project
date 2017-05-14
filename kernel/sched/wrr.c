@@ -472,6 +472,15 @@ struct task_struct *find_task_by_pid(pid_t pid)
 	return task;
 }
 
+static void update_wrr_timeslice(struct sched_wrr_entity *wrr_entity)
+{
+	// check if wrr is running
+	if (wrr_running(wrr_entity))
+		return;
+	// update timeslice
+	wrr_entity->time_slice = calc_wrr_time_slice(wrr_entity->weight);
+}
+
 /*
  * Set the SCHED_WRR weight of process, as identified by 'pid'.
  * If 'pid' is 0, set the weight for the calling process.
@@ -498,6 +507,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 			rq->wrr.weight_sum += weight - task->wrr.weight;
 		}
 		task->wrr.weight = weight;
+		update_wrr_timeslice(&task->wrr);
 	}
 	else
 		return -EACCES;
