@@ -238,11 +238,12 @@ static int select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 {
 	int cpu = task_cpu(p);
 	int new_cpu = cpu;
+	unsigned long weight;
 
 	if (p->nr_cpus_allowed == 1)
 		return new_cpu;
 
-	unsigned long weight = cpu_rq(cpu)->wrr.weight_sum;
+	weight = cpu_rq(cpu)->wrr.weight_sum;
 
 	/*
 	 * maybe we need lock here
@@ -494,7 +495,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 		return -EINVAL;
 
 	if (!current_uid()
-		|| current_uid() == task->cred->uid && task->wrr.weight > weight) {
+		|| (current_uid() == task->cred->uid && task->wrr.weight > weight)) {
 		if (task->on_rq == TASK_ON_RQ_QUEUED) {
 			rq = task_rq(task);
 			rq->wrr.weight_sum += weight - task->wrr.weight;
