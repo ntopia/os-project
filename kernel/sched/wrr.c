@@ -75,14 +75,8 @@ static void update_curr_wrr(struct rq *rq)
 /*
  * Initialize wrr entity for newly enqueued task
  */
-static void init_wrr_task(struct task_struct *p)
+static void init_wrr(struct sched_wrr_entity *wrr_entity)
 {
-	struct sched_wrr_entity *wrr_entity;
-
-	if (p == NULL)
-		return;
-
-	wrr_entity = &p->wrr;
 	if (!is_valid_wrr_weight(wrr_entity->weight)) {
 		/* maybe newly created task */
 		wrr_entity->weight = WRR_WEIGHT_DEFAULT;
@@ -93,6 +87,22 @@ static void init_wrr_task(struct task_struct *p)
 	wrr_entity->time_slice = calc_wrr_time_slice(wrr_entity->weight);
 }
 
+static void enqueue_wrr(struct sched_wrr_entity *we, struct wrr_rq *wrq)
+{
+	init_wrr(we);
+
+	list_add_tail(&we->run_list, &wrq->run_list);
+	wrq->wrr_nr_running++;
+	wrq->weight_sum += we->weight;
+}
+
+static void dequeue_wrr(struct sched_wrr_entity *we, struct wrr_rq *wrq)
+{
+	list_del_init(&we->run_list);
+	wrq->wrr_nr_running--;
+	wrq->weight_sum -= we->weight;
+}
+
 /*
  * Adding/removing a task to/from our data structure
  */
@@ -101,12 +111,7 @@ static void enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	struct wrr_rq *wrr_rq = &rq->wrr;
 	struct sched_wrr_entity *wrr_entity = &p->wrr;
 
-	init_wrr_task(p);
-
-	list_add_tail(&wrr_entity->run_list, &wrr_rq->run_list);
-	wrr_rq->wrr_nr_running++;
-	wrr_rq->weight_sum += wrr_entity->weight;
-
+	enqueue_wrr(wrr_entity, wrr_rq);
 	inc_nr_running(rq);
 }
 
@@ -116,11 +121,7 @@ static void dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_wrr_entity *wrr_entity = &p->wrr;
 
 	update_curr_wrr(rq);
-
-	list_del_init(&wrr_entity->run_list);
-	wrr_rq->wrr_nr_running--;
-	wrr_rq->weight_sum -= wrr_entity->weight;
-
+	dequeue_wrr(wrr_entity, wrr_rq);
 	dec_nr_running(rq);
 }
 
@@ -323,7 +324,15 @@ void trigger_wrr_load_balance(struct rq *rq, int cpu)
 }
 
 /*
- * This function does real load-balancing.
+ * This function figure out if the wrr is now running.
+ */
+static bool wrr_running(struct sched_wrr_entity *wrr, int cpu)
+{
+	return &cpu_rq(cpu)->curr->wrr == wrr;
+}
+
+/*
+ * This function executes load-balancing.
  */
 static void run_wrr_rebalance(struct softirq_action *h)
 {
@@ -331,8 +340,12 @@ static void run_wrr_rebalance(struct softirq_action *h)
 	int this_cpu = smp_processor_id();
 	int min_cpu = this_cpu;
 	int max_cpu = this_cpu;
+	struct list_head wrr_rq;
+	struct sched_wrr_entity *wrr_pos;
+	struct sched_wrr_entity *wrr_target = NULL;
 	unsigned long min_weight = cpu_rq(this_cpu)->wrr.weight_sum;
 	unsigned long max_weight = min_weight;
+	unsigned long limit_weight;
 
 	rcu_read_lock();
 	for_each_online_cpu(cpu) {
@@ -351,7 +364,33 @@ static void run_wrr_rebalance(struct softirq_action *h)
 	rcu_read_unlock();
 	if (min_cpu == max_cpu)
 		return;
+
 	/* Do load-balancing ! */
+	limit_weight = max_weight - min_weight;
+	max_weight = 0;
+	double_rq_lock(cpu_rq(max_cpu), cpu_rq(min_cpu));
+	wrr_rq = cpu_rq(max_cpu)->wrr.run_list;
+	list_for_each_entry(wrr_pos, &wrr_rq, run_list) {
+		if (wrr_pos->weight > limit_weight)
+			return;
+		if (wrr_pos->weight > max_weight && !wrr_running(wrr_pos, max_cpu)) {
+			max_weight = wrr_pos->weight;
+			wrr_target = wrr_pos;
+		}
+	}
+	if (wrr_target == NULL) {
+		double_rq_unlock(cpu_rq(max_cpu), cpu_rq(min_cpu));
+		return;
+	}
+	// remove target from max
+	update_curr_wrr(cpu_rq(max_cpu));
+	dequeue_wrr(wrr_target, &cpu_rq(max_cpu)->wrr);
+	dec_nr_running(cpu_rq(max_cpu));
+	// append target to min
+	enqueue_wrr(wrr_target, &cpu_rq(min_cpu)->wrr);
+	inc_nr_running(cpu_rq(min_cpu));
+
+	double_rq_unlock(cpu_rq(max_cpu), cpu_rq(min_cpu));
 }
 
 #endif
@@ -417,14 +456,14 @@ struct task_struct *find_task_by_pid(pid_t pid)
 {
 	struct task_struct *task = NULL;
 	struct pid *p_struct = NULL;
-	
+
 	if (pid == 0)
 		return current;
 
 	p_struct = find_get_pid(pid);
 	if (!p_struct)
 		return NULL;
-	
+
 	task = get_pid_task(p_struct, PIDTYPE_PID);
 	return task;
 }
@@ -445,7 +484,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	if (task == NULL)
 		return -EINVAL;
 
-	if (task->policy != SCHED_WRR) 
+	if (task->policy != SCHED_WRR)
 		return -EINVAL;
 
 	if (!current_uid()
@@ -473,7 +512,7 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 	if (task == NULL)
 		return -EINVAL;
 
-	if (task->policy != SCHED_WRR) 
+	if (task->policy != SCHED_WRR)
 		return -EINVAL;
 	return task->wrr.weight;
 }
