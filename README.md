@@ -57,7 +57,7 @@ On enqueueing wrr task, initialize wrr entity with default weight and timeslice 
 
 #### Implementing system calls
 In setweight, first check whether input is correct, and if user is root or owner of that task.
-root can set weight to any valid value, owner can only decrease weight of task.
+Root can set weight to any valid value, owner can only decrease weight of task.
 Getweight first check if input pid exists and that task's policy is wrr. if it is, return weight of that task.
 
 #### Changes in existing classes
