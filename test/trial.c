@@ -21,6 +21,7 @@ int main (int argc, char *argv[])
 	for (int weight = 0; weight < 20; weight++) {
 		time_weight[weight] = 0;
 		printf("==== weight <%d> ====\n", weight+1);
+		syscall(__NR_sched_setweight, pid, weight+1);
  
 		for (int cnt = 0; cnt < TOT_CNT; cnt++) {
 			clock_t t = clock();
