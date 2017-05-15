@@ -342,12 +342,12 @@ static void run_wrr_rebalance(struct softirq_action *h)
 	int min_cpu = this_cpu;
 	int max_cpu = this_cpu;
 	struct list_head *wrr_rq_head;
+	struct task_struct *target_task;
 	struct sched_wrr_entity *wrr_pos;
 	struct sched_wrr_entity *wrr_target = NULL;
 	unsigned long min_weight = cpu_rq(this_cpu)->wrr.weight_sum;
 	unsigned long max_weight = min_weight;
 	unsigned long limit_weight;
-	unsigned long flags;
 
 	rcu_read_lock();
 	for_each_online_cpu(cpu) {
@@ -366,12 +366,12 @@ static void run_wrr_rebalance(struct softirq_action *h)
 	rcu_read_unlock();
 	if (min_cpu == max_cpu)
 		return;
-
 	/* Do load-balancing ! */
 	limit_weight = (max_weight - min_weight)/2;
 	max_weight = 0;
 	
-	local_irq_save(flags);
+	local_irq_disable();
+
 	double_rq_lock(cpu_rq(max_cpu), cpu_rq(min_cpu));
 	wrr_rq_head = &cpu_rq(max_cpu)->wrr.run_list;
 	
@@ -384,20 +384,17 @@ static void run_wrr_rebalance(struct softirq_action *h)
 
 	if (wrr_target == NULL) {
 		double_rq_unlock(cpu_rq(max_cpu), cpu_rq(min_cpu));
-		local_irq_restore(flags);
+		local_irq_enable();
 		return;
 	}
-	// remove target from max
-	update_curr_wrr(cpu_rq(max_cpu));
-	dequeue_wrr(wrr_target, &cpu_rq(max_cpu)->wrr);
-	dec_nr_running(cpu_rq(max_cpu));
-
-	// append target to min
-	enqueue_wrr(wrr_target, &cpu_rq(min_cpu)->wrr);
-	inc_nr_running(cpu_rq(min_cpu));
 
 	double_rq_unlock(cpu_rq(max_cpu), cpu_rq(min_cpu));
-	local_irq_restore(flags);
+
+	target_task = container_of(wrr_target, struct task_struct, wrr);
+	__migrate_task(target_task, max_cpu, min_cpu);
+
+	local_irq_enable();
+
 }
 
 #endif
