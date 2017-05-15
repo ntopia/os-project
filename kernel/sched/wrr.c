@@ -73,14 +73,28 @@ static void update_curr_wrr(struct rq *rq)
 }
 
 /*
+ * This function figure out if the wrr is now running.
+ */
+static bool wrr_running(struct sched_wrr_entity *wrr, int cpu)
+{
+	return &cpu_rq(cpu)->curr->wrr == wrr;
+}
+
+/*
  * Update wrr_entity's timeslice if it is not running.
  */
 static void update_wrr_timeslice(struct sched_wrr_entity *wrr_entity)
 {
+	struct task_struct *task;
+	struct rq *rq;
+
+	task = wrr_task_of(wrr_entity);
+	rq = task_rq(task);
 	// check if wrr is running
-	if (wrr_running(wrr_entity))
+	if (task_current(rq, task))
 		return;
 	// update timeslice
+	printk(KERN_ALERT"*** it's not running; update time slice\n");
 	wrr_entity->time_slice = calc_wrr_time_slice(wrr_entity->weight);
 }
 
@@ -148,6 +162,7 @@ static void requeue_task_wrr(struct rq *rq, struct task_struct *p, int head)
 
 	if (head) {
 		list_move(&wrr_se->run_list, &wrr_rq->run_list);
+		printk(KERN_ALERT"*** requeue ***\n");
 		update_wrr_timeslice(wrr_se);
 	}
 	else
@@ -339,14 +354,6 @@ void trigger_wrr_load_balance(struct rq *rq, int cpu)
 }
 
 /*
- * This function figure out if the wrr is now running.
- */
-static bool wrr_running(struct sched_wrr_entity *wrr, int cpu)
-{
-	return &cpu_rq(cpu)->curr->wrr == wrr;
-}
-
-/*
  * This function executes load-balancing.
  */
 static void run_wrr_rebalance(struct softirq_action *h)
@@ -513,6 +520,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 		}
 		task->wrr.weight = weight;
 		update_wrr_timeslice(&task->wrr);
+		printk(KERN_ALERT"*** [%d] weight=%d\ttime_slice=%d\n", pid, task->wrr.weight, task->wrr.time_slice);
 	}
 	else
 		return -EACCES;
