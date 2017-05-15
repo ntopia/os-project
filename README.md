@@ -45,14 +45,14 @@ push trial /root/trial
 ### Implementation
 
 #### Implementing classes
-We need to implement three classes, wrr_sched_class, wrr_rq, and wrr_entity.
-wrr_sched_class has function pointers to actually run wrr.
-wrr_rq is used in rq, and have a lock and list of wrr tasks. It also has number of tasks in rq and sum of their weight to use in loadbalancing.
-wrr_entity is used in task_struct and has variables used in wrr such as weight.
+We need to implement three classes, `wrr_sched_class`, `wrr_rq`, and `wrr_entity`.
+`wrr_sched_class` has function pointers to actually run wrr.
+`wrr_rq` is used in rq, and have a lock and list of wrr tasks. It also has number of tasks in rq and sum of their weight to use in loadbalancing.
+`wrr_entity` is used in `task_struct` and has variables used in wrr such as weight.
 
 #### Initializing data
 On initializing scheduler, call loadbalance to move existing tasks to newly created scheduler.
-When initializing rq, also initialize wrr_rq, initializing lock, list and variables.
+When initializing rq, also initialize `wrr_rq`, initializing lock, list and variables.
 On enqueueing wrr task, initialize wrr entity with default weight and timeslice if they are not already set.
 
 #### Implementing system calls
@@ -68,12 +68,12 @@ Scheduler classes have priority, and in spec, priority of wrr is between rt and 
 //TODO
 
 #### Implementing loadbalance
-When triggered, first find runqueue with minimum weight sum and maximum weight sum by traversing online cpus. we used rcu_read_lock to assure synchronization.
-If it is possible to migrate. use double_rq_lock to hold locks for both rqs,and traverse tasks in rq with maximum weight sum and find task with maximum migratable task.
+When triggered, first find runqueue with minimum weight sum and maximum weight sum by traversing online cpus. we used `rcu_read_lock` to assure synchronization.
+If it is possible to migrate. use `double_rq_lock` to hold locks for both rqs,and traverse tasks in rq with maximum weight sum and find task with maximum migratable task.
 If we found one, then dequeue that task from maximum rq and enqueue it in minimum rq, then unlock both locks.
 
 #### Setting WRR to default scheduler
-Change codes in include/linux/init_task.h, kernel/kthread.c, and kernel/sched/core.c. Change their policy to SCHED_WRR.
+Change codes in `include/linux/init_task.h`, `kernel/kthread.c`, and `kernel/sched/core.c`. Change their policy to `SCHED_WRR`.
 
 #### Debugging
 //TODO
