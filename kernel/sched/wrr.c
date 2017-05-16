@@ -160,13 +160,13 @@ static void requeue_task_wrr(struct rq *rq, struct task_struct *p, int head)
 	struct wrr_rq *wrr_rq = &rq->wrr;
 	struct sched_wrr_entity *wrr_se = &p->wrr;
 
-	if (head) {
-		list_move(&wrr_se->run_list, &wrr_rq->run_list);
-		printk(KERN_ALERT"*** requeue ***\n");
-		update_wrr_timeslice(wrr_se);
-	}
+	if (head)
+		list_move(&wrr_se->run_list, &wrr_rq->run_list);	
 	else
 		list_move_tail(&wrr_se->run_list, &wrr_rq->run_list);
+
+	printk(KERN_ALERT"*** requeue ***\n");
+	update_wrr_timeslice(wrr_se);
 }
 
 /*
