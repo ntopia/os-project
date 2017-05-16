@@ -274,16 +274,15 @@ static int select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 
 	weight = cpu_rq(cpu)->wrr.weight_sum;
 
-	/*
-	 * maybe we need lock here
-	 */
-	for_each_possible_cpu(cpu) {
+	rcu_read_lock();
+	for_each_online_cpu(cpu) {
 		unsigned long tmp_weight = cpu_rq(cpu)->wrr.weight_sum;
 		if (tmp_weight < weight) {
 			weight = tmp_weight;
 			new_cpu = cpu;
 		}
 	}
+	rcu_read_unlock();
 
 	return new_cpu;
 }
