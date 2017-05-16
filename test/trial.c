@@ -6,11 +6,13 @@
 #include <sys/unistd.h>
 #include <linux/sched.h>
 #include <sched.h>
+#include <sys/time.h>
 
 #include "test.h"
 
-clock_t time_weight[20];
+double time_weight[20];
 int TOT_CNT = 2;
+
 int main (int argc, char *argv[])
 {
 	int x = 1000000007;
@@ -22,9 +24,10 @@ int main (int argc, char *argv[])
 		time_weight[weight] = 0;
 		printf("==== weight <%d> ====\n", weight+1);
 		syscall(__NR_sched_setweight, pid, weight+1);
- 
+
+		struct timeval tv1, tv2;
 		for (int cnt = 0; cnt < TOT_CNT; cnt++) {
-			clock_t t = clock();
+			gettimeofday(&tv1, NULL);
 			if (argc > 1)
 				x = rand();
 			else
@@ -51,18 +54,19 @@ int main (int argc, char *argv[])
 					x /= d;
 				}
 			}
-			t = clock() - t;
-			printf("\t[%d] %lf\n", cnt, ((double)t)/CLOCKS_PER_SEC);
-			time_weight[weight] += t;
+			gettimeofday(&tv2, NULL);
+
+			double elapsed = (double)(tv2.tv_usec - tv1.tv_usec) / 1000000 + (double)(tv2.tv_sec - tv1.tv_sec);
+			printf("\t[%d] %lf\n", cnt, elapsed);
+			time_weight[weight] += elapsed;
 		}
 		printf("----------\n");
-		printf("sum: %lf\tavg: %lf\n\n", ((double)time_weight[weight])/CLOCKS_PER_SEC, ((double)time_weight[weight])/CLOCKS_PER_SEC/TOT_CNT);
+		printf("sum: %lf\tavg: %lf\n\n", time_weight[weight], time_weight[weight]/TOT_CNT);
 	}
 
 	FILE *f = fopen("out.txt", "w");
 	for (int i = 0; i < 20; i++) {
-		fprintf(f, "weight: %d\tsum: %lf\tavg: %lf\n", i+1, ((double)time_weight[i])/CLOCKS_PER_SEC, ((double)time_weight[i])/CLOCKS_PER_SEC/TOT_CNT);
-
+		fprintf(f, "weight: %d\tsum: %lf\tavg: %lf\n", i+1, time_weight[i], time_weight[i]/TOT_CNT);
 	}	
 	fclose(f);
 	return 0;
