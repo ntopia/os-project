@@ -103,7 +103,18 @@ Change codes in `include/linux/init_task.h`, `kernel/kthread.c`, and `kernel/sch
 Some functions, such as `check_preempt_curr` does not need to do anything, because all mendatory things are done outside of function.
 
 ### Investigation
-//TODO
+To figure out the difference of throughput among various weighted task, we should run dummy tasks.
+When executing `trial` alone, the `trial` task is hardly interrupted.
+As a result, regardless of the weight, factorizing time of prime number `100000007` is about 2 seconds.
+
+First of all, run 8 dummy tasks to enqueue each task to every cpus.
+Then run the `trial` task to measure factorizing time of prime number `100000007`.
+We repeatly measured difference between end time to start time and calculated the average, for every weight.
+
+The [graph](plot.pdf) below shows relationship between weight and the average factorization time(in second).
+
+![graph](plot.png)
+
 
 ### Optimizations
 //TODO
