@@ -62,7 +62,7 @@ Getweight first check if input pid exists and that task's policy is wrr. if it i
 
 #### Changes in existing classes
 Scheduler classes have priority, and in spec, priority of wrr is between rt and fair. so set next class of rt to wrr, and next class of wrr to fair.
-//TODO: interrupt..?
+Add new values to softirq, to make wrr scheduled tasks interruptable.
 
 #### Implementing WRR class functions
 
@@ -77,13 +77,13 @@ Remove current task from wrr and requeue it. Special case is when queue has only
 Chooses next task, which is the front element of `wrr_rq`
 
 ##### `put_prev_task_wrr`
-//TODO
+Update current task's runtime statistics. Everything else that need to be done are handled outside this function.
 
 ##### `select_task_rq_wrr`
 Choose rq to put task. Traverse online cpus and choose one that has minimum weight sum, then return number of choosen cpu. We will need rcu lock here for synchronization.
 
 ##### `set_curr_task_wrr`
-//TODO
+Set start time of current task. Everything else is handled outside this function.
 
 ##### `task_tick_wrr`
 Reduce task's timeslice by one, and if it becomes 0, then it means that rq have to switch to next task. So reset current task's timeslice and then put it at back of queue.
