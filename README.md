@@ -99,8 +99,8 @@ If we found one, then dequeue that task from maximum rq and enqueue it in minimu
 #### Setting WRR to default scheduler
 Change codes in `include/linux/init_task.h`, `kernel/kthread.c`, and `kernel/sched/core.c`. Change their policy to `SCHED_WRR`.
 
-#### Debugging
-//TODO
+#### Other functions
+Some functions, such as `check_preempt_curr` does not need to do anything, because all mendatory things are done outside of function.
 
 ### Investigation
 //TODO
