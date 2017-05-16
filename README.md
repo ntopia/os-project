@@ -65,7 +65,31 @@ Scheduler classes have priority, and in spec, priority of wrr is between rt and 
 //TODO: interrupt..?
 
 #### Implementing WRR class functions
+
+##### `enqueue_task_wrr` and `dequeue_task_wrr`
+Add `task_struct` to `wrr_rq` recalculate variables in `wrr_rq`
+Lock is held outside this function, so we do not need to worry about synchronization here.
+
+##### `yield_task_wrr`
+Remove current task from wrr and requeue it. Special case is when queue has only one task.
+
+##### `pick_next_task_wrr`
+Chooses next task, which is the front element of `wrr_rq`
+
+##### `put_prev_task_wrr`
 //TODO
+
+##### `select_task_rq_wrr`
+Choose rq to put task. Traverse online cpus and choose one that has minimum weight sum, then return number of choosen cpu. We will need rcu lock here for synchronization.
+
+##### `set_curr_task_wrr`
+//TODO
+
+##### `task_tick_wrr`
+Reduce task's timeslice by one, and if it becomes 0, then it means that rq have to switch to next task. So reset current task's timeslice and then put it at back of queue.
+
+##### `get_rr_interval_wrr`
+Calculate given task's timeslice with weight and return calculated value.
 
 #### Implementing loadbalance
 When triggered, first find runqueue with minimum weight sum and maximum weight sum by traversing online cpus. We used `rcu_read_lock` to assure synchronization.
